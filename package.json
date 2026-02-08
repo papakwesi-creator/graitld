@@ -18,6 +18,7 @@
     "@workos-inc/authkit-nextjs": "^2.13.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "concurrently": "^9.2.1",
     "convex": "^1.31.5",
     "next": "16.1.4",
     "react": "19.2.3",
