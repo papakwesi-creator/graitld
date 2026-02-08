@@ -9,15 +9,23 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "./ui/sidebar";
+import { DashboardSquare01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
-const sidebarItems: { title: string; href: string }[] = [
+const sidebarItems: {
+  title: string;
+  href: string;
+  icon?: typeof DashboardSquare01Icon;
+}[] = [
   {
     title: "Overview",
     href: "/",
+    icon: DashboardSquare01Icon,
   },
   {
     title: "Influencers",
     href: "/influencers",
+    icon: UserGroupIcon
   },
   {
     title: "Analytics",
@@ -47,10 +55,13 @@ export const AppSidebar = () => {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {sidebarItems.map(({ href, title }) => (
+            {sidebarItems.map(({ icon, href, title }) => (
               <SidebarMenuItem key={title}>
                 <SidebarMenuButton>
-                  <Link href={href as Route}>{title}</Link>
+                  <Link href={href as Route} className='flex gap-2 items-center'>
+                    {icon && <HugeiconsIcon icon={icon} />}
+                    <span>{title}</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
