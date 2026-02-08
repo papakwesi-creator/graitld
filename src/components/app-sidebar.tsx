@@ -9,18 +9,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "./ui/sidebar";
-import { DashboardSquare01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
+import { Analytics01Icon, ChartRadarIcon, DashboardSquare02Icon, Search02Icon, Settings01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 const sidebarItems: {
   title: string;
   href: string;
-  icon?: typeof DashboardSquare01Icon;
+  icon?: typeof DashboardSquare02Icon;
 }[] = [
   {
     title: "Overview",
     href: "/",
-    icon: DashboardSquare01Icon,
+    icon: DashboardSquare02Icon,
   },
   {
     title: "Influencers",
@@ -30,18 +30,22 @@ const sidebarItems: {
   {
     title: "Analytics",
     href: "/analytics",
+    icon: Analytics01Icon
   },
   {
     title: "Reports",
     href: "/reports",
+    icon: ChartRadarIcon
   },
   {
     title: "Channel Lookup",
     href: "/channel-lookup",
+    icon: Search02Icon
   },
   {
     title: "Settings",
     href: "/settings",
+    icon: Settings01Icon
   },
 ];
 
