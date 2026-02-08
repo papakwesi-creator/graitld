@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import Link from "next/link";
 import {
   Sidebar,
@@ -9,32 +10,32 @@ import {
   SidebarMenuItem,
 } from "./ui/sidebar";
 
-const sidebarItems = [
+const sidebarItems: { title: string; href: string }[] = [
   {
-    title: 'Overview',
-    href: '/',
+    title: "Overview",
+    href: "/",
   },
   {
-    title: 'Influencers',
-    href: '/influencers',
+    title: "Influencers",
+    href: "/influencers",
   },
   {
-    title: 'Analytics',
-    href: '/analytics',
+    title: "Analytics",
+    href: "/analytics",
   },
   {
-    title: 'Reports',
-    href: '/reports',
+    title: "Reports",
+    href: "/reports",
   },
   {
-    title: 'Channel Lookup',
-    href: '/channel-lookup',
+    title: "Channel Lookup",
+    href: "/channel-lookup",
   },
   {
-    title: 'Settings',
-    href: '/settings',
+    title: "Settings",
+    href: "/settings",
   },
-]
+];
 
 export const AppSidebar = () => {
   return (
@@ -46,12 +47,13 @@ export const AppSidebar = () => {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {sidebarItems.map(({href, title}) => (
+            {sidebarItems.map(({ href, title }) => (
               <SidebarMenuItem key={title}>
                 <SidebarMenuButton>
-                  <Link href={href}>{title}</Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>)}
+                  <Link href={href as Route}>{title}</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
