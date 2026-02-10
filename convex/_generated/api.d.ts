@@ -9,7 +9,6 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as reports from "../reports.js";
 
 import type {
   ApiFromModules,
@@ -19,7 +18,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  reports: typeof reports;
 }>;
 
 /**
