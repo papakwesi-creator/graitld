@@ -1,5 +1,15 @@
-import type { Route } from "next";
-import Link from "next/link";
+import {
+  Analytics01Icon,
+  ChartRadarIcon,
+  DashboardSquare02Icon,
+  Search02Icon,
+  Settings01Icon,
+  UserGroupIcon,
+} from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import type { Route } from 'next';
+import Link from 'next/link';
+
 import {
   Sidebar,
   SidebarContent,
@@ -8,9 +18,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "./ui/sidebar";
-import { Analytics01Icon, ChartRadarIcon, DashboardSquare02Icon, Search02Icon, Settings01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+} from './ui/sidebar';
 
 const sidebarItems: {
   title: string;
@@ -18,34 +26,34 @@ const sidebarItems: {
   icon?: typeof DashboardSquare02Icon;
 }[] = [
   {
-    title: "Overview",
-    href: "/",
+    title: 'Overview',
+    href: '/',
     icon: DashboardSquare02Icon,
   },
   {
-    title: "Influencers",
-    href: "/influencers",
-    icon: UserGroupIcon
+    title: 'Influencers',
+    href: '/influencers',
+    icon: UserGroupIcon,
   },
   {
-    title: "Analytics",
-    href: "/analytics",
-    icon: Analytics01Icon
+    title: 'Analytics',
+    href: '/analytics',
+    icon: Analytics01Icon,
   },
   {
-    title: "Reports",
-    href: "/reports",
-    icon: ChartRadarIcon
+    title: 'Reports',
+    href: '/reports',
+    icon: ChartRadarIcon,
   },
   {
-    title: "Channel Lookup",
-    href: "/channel-lookup",
-    icon: Search02Icon
+    title: 'Channel Lookup',
+    href: '/channel-lookup',
+    icon: Search02Icon,
   },
   {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings01Icon
+    title: 'Settings',
+    href: '/settings',
+    icon: Settings01Icon,
   },
 ];
 
