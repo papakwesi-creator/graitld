@@ -26,7 +26,7 @@
     ]
   },
   "experimentalTailwindcss": {
-    "stylesheet": "./path/to/stylesheet.css",
+    "stylesheet": "./src/app/globals.css",
     "attributes": ["class", "className"],
     "functions": ["clsx", "cn"],
     "preserveWhitespace": true
