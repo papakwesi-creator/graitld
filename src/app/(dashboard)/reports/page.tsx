@@ -1,6 +1,6 @@
 'use client';
 
-import { Download01Icon, FileTextIcon } from '@hugeicons/core-free-icons';
+import { Download01Icon, File01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from 'convex/react';
 import { useState } from 'react';
@@ -150,7 +150,7 @@ By Platform:
           >
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent/10 group-hover:text-accent">
-                <HugeiconsIcon icon={FileTextIcon} size={20} />
+                <HugeiconsIcon icon={File01Icon} size={20} />
               </div>
               <div className="flex-1">
                 <h3 className="font-heading text-sm font-semibold">{report.label}</h3>
