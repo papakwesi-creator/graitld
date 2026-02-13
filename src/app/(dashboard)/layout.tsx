@@ -1,18 +1,17 @@
-import { Authenticated } from 'convex/react';
+import { redirect } from 'next/navigation';
 
-import { AppSidebar } from '@/src/components/app-sidebar';
-import { SidebarProvider, SidebarTrigger } from '@/src/components/ui/sidebar';
+import { isAuthenticated } from '@/lib/auth-server';
+import { DashboardLayoutClient } from './DashboardLayoutClient';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <Authenticated>
-      <SidebarProvider>
-        <AppSidebar />
-        <main>
-          <SidebarTrigger />
-          {children}
-        </main>
-      </SidebarProvider>
-    </Authenticated>
-  );
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const authed = await isAuthenticated();
+  if (!authed) {
+    redirect('/sign-in');
+  }
+
+  return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
 }
