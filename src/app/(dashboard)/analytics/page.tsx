@@ -10,7 +10,6 @@ import {
   PieChart,
   ResponsiveContainer,
   Tooltip,
-  Treemap,
   XAxis,
   YAxis,
 } from 'recharts';
