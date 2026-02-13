@@ -121,7 +121,10 @@ export default function AnalyticsPage() {
                   width={100}
                 />
                 <Tooltip
-                  formatter={(value: number) => `GH\u20B5${value.toLocaleString()}`}
+                  formatter={(value: number | string | undefined) => {
+                    const numeric = typeof value === 'number' ? value : Number(value ?? 0);
+                    return `GH\u20B5${numeric.toLocaleString()}`;
+                  }}
                   contentStyle={{
                     backgroundColor: 'oklch(0.995 0.002 85)',
                     border: '1px solid oklch(0.88 0.01 85)',
