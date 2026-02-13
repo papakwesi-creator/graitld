@@ -12,7 +12,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/input-group';
-import { cn } from '@/src/lib/utils';
+import { cn } from '@/lib/utils';
 
 const Combobox = ComboboxPrimitive.Root;
 
