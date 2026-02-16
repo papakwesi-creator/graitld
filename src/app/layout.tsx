@@ -3,8 +3,9 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Manrope, DM_Sans, JetBrains_Mono } from 'next/font/google';
 
-import { ConvexClientProvider } from './ConvexClientProvider';
 import { ThemeProvider } from '@/components/theme-provider';
+
+import { ConvexClientProvider } from './ConvexClientProvider';
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -36,13 +37,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang='en' suppressHydrationWarning>
       <body
         className={`${manrope.variable} ${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
+          attribute='class'
+          defaultTheme='system'
           enableSystem
           disableTransitionOnChange
         >
