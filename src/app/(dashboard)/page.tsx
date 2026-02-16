@@ -15,6 +15,8 @@ import {
 } from 'recharts';
 import { api } from '~convex/_generated/api';
 
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function formatCurrency(value: number): string {
@@ -35,8 +37,8 @@ function MetricCard({
   accentClass?: string;
 }) {
   return (
-    <div className='glass-panel hover-card-effect relative overflow-hidden rounded-2xl p-6 transition-all duration-300'>
-      <div className='relative z-10'>
+    <Card className='glass-panel hover-card-effect relative overflow-hidden rounded-2xl border-0 p-0 transition-all duration-300'>
+      <CardContent className='relative z-10 p-6'>
         <p className='font-heading text-xs font-bold tracking-widest text-muted-foreground/80 uppercase'>
           {label}
         </p>
@@ -48,9 +50,9 @@ function MetricCard({
           </p>
         </div>
         {subtitle && <p className='mt-1 text-xs font-medium text-muted-foreground'>{subtitle}</p>}
-      </div>
+      </CardContent>
       <div className='absolute -top-6 -right-6 h-24 w-24 rounded-full bg-gradient-to-br from-white/5 to-white/0 blur-2xl dark:from-white/10' />
-    </div>
+    </Card>
   );
 }
 
@@ -119,11 +121,11 @@ export default function OverviewPage() {
       {/* Charts row */}
       <div className='grid gap-6 lg:grid-cols-3'>
         {/* Revenue trend */}
-        <div className='glass-panel rounded-2xl p-6 lg:col-span-2'>
-          <div className='mb-6 flex items-center justify-between'>
-            <h3 className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
+        <Card className='glass-panel rounded-2xl border-0 p-0 lg:col-span-2'>
+          <CardHeader className='flex-row items-center justify-between px-6 pt-6'>
+            <CardTitle className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
               Revenue &amp; Tax Trend
-            </h3>
+            </CardTitle>
             <div className='flex gap-2'>
               <span className='flex items-center gap-1.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase'>
                 <span className='h-2 w-2 rounded-full bg-[oklch(0.6_0.18_250)]'></span> Revenue
@@ -132,9 +134,9 @@ export default function OverviewPage() {
                 <span className='h-2 w-2 rounded-full bg-[oklch(0.65_0.18_150)]'></span> Tax
               </span>
             </div>
-          </div>
+          </CardHeader>
 
-          {revenueData && revenueData.length > 0 ? (
+          <CardContent className='px-6 pb-6'>{revenueData && revenueData.length > 0 ? (
             <div className='h-[300px] w-full'>
               <ResponsiveContainer width='100%' height='100%'>
                 <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -205,13 +207,16 @@ export default function OverviewPage() {
               No data yet. Add influencers to see trends.
             </div>
           )}
-        </div>
-
+          </CardContent>
+        </Card>
         {/* Platform distribution */}
-        <div className='glass-panel rounded-2xl p-6'>
-          <h3 className='mb-6 font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
-            Platform Split
-          </h3>
+        <Card className='glass-panel rounded-2xl border-0 p-0'>
+          <CardHeader className='px-6 pt-6'>
+            <CardTitle className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
+              Platform Split
+            </CardTitle>
+          </CardHeader>
+          <CardContent className='px-6 pb-6'>
           {platformData && (platformData[0].value > 0 || platformData[1].value > 0) ? (
             <div className='flex h-[300px] flex-col items-center justify-center'>
               <ResponsiveContainer width='100%' height={220}>
@@ -270,100 +275,109 @@ export default function OverviewPage() {
               No influencers yet.
             </div>
           )}
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Bottom row: Top influencers & Activity */}
       <div className='grid gap-6 lg:grid-cols-2'>
         {/* Top influencers */}
-        <div className='glass-panel rounded-2xl p-6'>
-          <div className='mb-6 flex items-center justify-between'>
-            <h3 className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
+        <Card className='glass-panel rounded-2xl border-0 p-0'>
+          <CardHeader className='flex-row items-center justify-between px-6 pt-6'>
+            <CardTitle className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
               Top Influencers
-            </h3>
-            <button className='text-xs font-medium text-accent hover:underline'>View All</button>
-          </div>
+            </CardTitle>
+            <Button variant='link' className='h-auto p-0 text-xs font-medium text-accent'>
+              View All
+            </Button>
+          </CardHeader>
 
-          {topInfluencers && topInfluencers.length > 0 ? (
-            <div className='space-y-4'>
-              {topInfluencers.slice(0, 5).map((inf, i) => (
-                <div
-                  key={inf._id}
-                  className='group flex items-center justify-between rounded-xl border border-transparent bg-secondary/30 p-3 transition-all hover:border-border hover:bg-secondary/60'
-                >
-                  <div className='flex items-center gap-4'>
-                    <span className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background font-mono text-xs font-bold text-muted-foreground shadow-sm transition-transform group-hover:scale-110 group-hover:text-foreground'>
-                      {i + 1}
-                    </span>
-                    <div>
-                      <p className='font-heading text-sm font-semibold'>{inf.name}</p>
-                      <p className='text-xs text-muted-foreground'>
-                        @{inf.handle} &middot; <span className='capitalize'>{inf.platform}</span>
-                      </p>
+          <CardContent className='px-6 pb-6'>
+            {topInfluencers && topInfluencers.length > 0 ? (
+              <div className='space-y-4'>
+                {topInfluencers.slice(0, 5).map((inf, i) => (
+                  <div
+                    key={inf._id}
+                    className='group flex items-center justify-between rounded-xl border border-transparent bg-secondary/30 p-3 transition-all hover:border-border hover:bg-secondary/60'
+                  >
+                    <div className='flex items-center gap-4'>
+                      <span className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background font-mono text-xs font-bold text-muted-foreground shadow-sm transition-transform group-hover:scale-110 group-hover:text-foreground'>
+                        {i + 1}
+                      </span>
+                      <div>
+                        <p className='font-heading text-sm font-semibold'>{inf.name}</p>
+                        <p className='text-xs text-muted-foreground'>
+                          @{inf.handle} &middot; <span className='capitalize'>{inf.platform}</span>
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className='text-right'>
-                    <span className='block font-mono text-sm font-medium text-foreground'>
-                      {formatCurrency(inf.estimatedAnnualRevenue ?? 0)}
-                    </span>
-                    <span className='text-[10px] tracking-wide text-muted-foreground uppercase'>
-                      Est. Revenue
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className='py-12 text-center text-sm text-muted-foreground'>
-              No influencers added yet.
-            </p>
-          )}
-        </div>
-
-        {/* Recent activity */}
-        <div className='glass-panel rounded-2xl p-6'>
-          <div className='mb-6 flex items-center justify-between'>
-            <h3 className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
-              Recent Activity
-            </h3>
-            <button className='text-xs font-medium text-accent hover:underline'>View All</button>
-          </div>
-          {recentLogs && recentLogs.length > 0 ? (
-            <div className='relative space-y-6 pl-2'>
-              {/* Timeline line */}
-              <div className='absolute top-2 bottom-4 left-[11px] w-px bg-border/50' />
-
-              {recentLogs.map((log) => (
-                <div key={log._id} className='relative flex items-start gap-4'>
-                  <div className='relative z-10 mt-1.5 flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full bg-background ring-2 ring-border'>
-                    <div className='h-1.5 w-1.5 rounded-full bg-accent' />
-                  </div>
-                  <div className='flex-1 rounded-xl bg-secondary/20 p-3 transition-colors hover:bg-secondary/40'>
-                    <div className='flex items-start justify-between'>
-                      <p className='text-sm font-medium text-foreground'>
-                        <span className='font-bold text-primary'>{log.userName ?? 'System'}</span>{' '}
-                        {log.action.replace(/_/g, ' ')}
-                      </p>
-                      <span className='font-mono text-[10px] text-muted-foreground'>
-                        {new Date(log.timestamp).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                        })}
+                    <div className='text-right'>
+                      <span className='block font-mono text-sm font-medium text-foreground'>
+                        {formatCurrency(inf.estimatedAnnualRevenue ?? 0)}
+                      </span>
+                      <span className='text-[10px] tracking-wide text-muted-foreground uppercase'>
+                        Est. Revenue
                       </span>
                     </div>
-                    {log.details && (
-                      <p className='mt-1 text-xs text-muted-foreground'>{log.details}</p>
-                    )}
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className='py-12 text-center text-sm text-muted-foreground'>
-              No activity recorded yet.
-            </p>
-          )}
-        </div>
+                ))}
+              </div>
+            ) : (
+              <p className='py-12 text-center text-sm text-muted-foreground'>
+                No influencers added yet.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent activity */}
+        <Card className='glass-panel rounded-2xl border-0 p-0'>
+          <CardHeader className='flex-row items-center justify-between px-6 pt-6'>
+            <CardTitle className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
+              Recent Activity
+            </CardTitle>
+            <Button variant='link' className='h-auto p-0 text-xs font-medium text-accent'>
+              View All
+            </Button>
+          </CardHeader>
+          <CardContent className='px-6 pb-6'>
+            {recentLogs && recentLogs.length > 0 ? (
+              <div className='relative space-y-6 pl-2'>
+                {/* Timeline line */}
+                <div className='absolute top-2 bottom-4 left-[11px] w-px bg-border/50' />
+
+                {recentLogs.map((log) => (
+                  <div key={log._id} className='relative flex items-start gap-4'>
+                    <div className='relative z-10 mt-1.5 flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full bg-background ring-2 ring-border'>
+                      <div className='h-1.5 w-1.5 rounded-full bg-accent' />
+                    </div>
+                    <div className='flex-1 rounded-xl bg-secondary/20 p-3 transition-colors hover:bg-secondary/40'>
+                      <div className='flex items-start justify-between'>
+                        <p className='text-sm font-medium text-foreground'>
+                          <span className='font-bold text-primary'>{log.userName ?? 'System'}</span>{' '}
+                          {log.action.replace(/_/g, ' ')}
+                        </p>
+                        <span className='font-mono text-[10px] text-muted-foreground'>
+                          {new Date(log.timestamp).toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                      {log.details && (
+                        <p className='mt-1 text-xs text-muted-foreground'>{log.details}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className='py-12 text-center text-sm text-muted-foreground'>
+                No activity recorded yet.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
