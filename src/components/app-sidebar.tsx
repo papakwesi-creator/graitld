@@ -12,7 +12,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import { authClient } from '@/lib/auth-client';
 
@@ -68,11 +68,15 @@ const navItems: {
 
 export const AppSidebar = () => {
   const pathname = usePathname();
-  const router = useRouter();
 
   const handleSignOut = async () => {
-    await authClient.signOut();
-    router.push('/sign-in');
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          window.location.href = '/sign-in';
+        },
+      },
+    });
   };
 
   const isActive = (href: string) => {
