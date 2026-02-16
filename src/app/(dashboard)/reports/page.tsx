@@ -4,10 +4,10 @@ import { Download01Icon, File01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from 'convex/react';
 import { useState } from 'react';
+import { api } from '~convex/_generated/api';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { api } from '~convex/_generated/api';
 
 type ReportType = 'tax-summary' | 'compliance-overview' | 'influencer-list' | 'revenue-analysis';
 
@@ -44,14 +44,14 @@ export default function ReportsPage() {
   // Show skeleton while data is loading
   if (metrics === undefined || influencers === undefined || compliance === undefined) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-5 w-80" />
-        <div className="grid gap-4 sm:grid-cols-2">
+      <div className='space-y-6'>
+        <Skeleton className='h-5 w-80' />
+        <div className='grid gap-4 sm:grid-cols-2'>
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-36 rounded-xl" />
+            <Skeleton key={i} className='h-36 rounded-xl' />
           ))}
         </div>
-        <Skeleton className="h-40 rounded-xl" />
+        <Skeleton className='h-40 rounded-xl' />
       </div>
     );
   }
@@ -103,7 +103,7 @@ ${'─'.repeat(90)}
 ${influencers
   .map(
     (i) =>
-      `${i.name.padEnd(25)} ${i.platform.padEnd(10)} @${i.handle.padEnd(19)} ${(i.complianceStatus ?? 'pending').padEnd(15)} GH₵${(i.estimatedAnnualRevenue ?? 0).toLocaleString()}`
+      `${i.name.padEnd(25)} ${i.platform.padEnd(10)} @${i.handle.padEnd(19)} ${(i.complianceStatus ?? 'pending').padEnd(15)} GH₵${(i.estimatedAnnualRevenue ?? 0).toLocaleString()}`,
   )
   .join('\n')}
 `;
@@ -137,32 +137,31 @@ By Platform:
   };
 
   return (
-    <div className="space-y-6 stagger-children">
-      <p className="text-sm text-muted-foreground">
-        Generate and download reports for tax analysis, compliance tracking, and influencer management.
+    <div className='stagger-children space-y-6'>
+      <p className='text-sm text-muted-foreground'>
+        Generate and download reports for tax analysis, compliance tracking, and influencer
+        management.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className='grid gap-4 sm:grid-cols-2'>
         {REPORT_TYPES.map((report) => (
           <div
             key={report.value}
-            className="group rounded-xl border border-border/60 bg-card p-5 transition-all hover:border-accent/30 hover:shadow-md"
+            className='group rounded-xl border border-border/60 bg-card p-5 transition-all hover:border-accent/30 hover:shadow-md'
           >
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent/10 group-hover:text-accent">
+            <div className='flex items-start gap-4'>
+              <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent/10 group-hover:text-accent'>
                 <HugeiconsIcon icon={File01Icon} size={20} />
               </div>
-              <div className="flex-1">
-                <h3 className="font-heading text-sm font-semibold">{report.label}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {report.description}
-                </p>
+              <div className='flex-1'>
+                <h3 className='font-heading text-sm font-semibold'>{report.label}</h3>
+                <p className='mt-1 text-xs text-muted-foreground'>{report.description}</p>
                 <Button
                   onClick={() => generateReport(report.value)}
                   disabled={generating || metrics === undefined}
-                  variant="outline"
-                  className="mt-4 gap-2 text-xs"
-                  size="sm"
+                  variant='outline'
+                  className='mt-4 gap-2 text-xs'
+                  size='sm'
                 >
                   <HugeiconsIcon icon={Download01Icon} size={14} />
                   Generate &amp; Download
@@ -174,11 +173,11 @@ By Platform:
       </div>
 
       {/* Recently generated placeholder */}
-      <div className="rounded-xl border border-border/60 bg-card p-5">
-        <h3 className="mb-4 font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className='rounded-xl border border-border/60 bg-card p-5'>
+        <h3 className='mb-4 font-heading text-sm font-semibold tracking-wider text-muted-foreground uppercase'>
           Report History
         </h3>
-        <p className="py-8 text-center text-sm text-muted-foreground">
+        <p className='py-8 text-center text-sm text-muted-foreground'>
           Generated reports will appear here. Reports are downloaded directly to your device.
         </p>
       </div>

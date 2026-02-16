@@ -1,7 +1,7 @@
 import { v } from 'convex/values';
 
-import { requireAuth } from './auth';
 import { mutation, query } from './_generated/server';
+import { requireAuth } from './auth';
 
 export const logActivity = mutation({
   args: {
@@ -28,11 +28,7 @@ export const getRecentLogs = query({
   handler: async (ctx, args) => {
     await requireAuth(ctx);
     const limit = args.limit ?? 20;
-    return await ctx.db
-      .query('auditLogs')
-      .withIndex('by_timestamp')
-      .order('desc')
-      .take(limit);
+    return await ctx.db.query('auditLogs').withIndex('by_timestamp').order('desc').take(limit);
   },
 });
 

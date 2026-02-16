@@ -32,9 +32,7 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const filtered = pages.filter((p) =>
-    p.title.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = pages.filter((p) => p.title.toLowerCase().includes(query.toLowerCase()));
 
   const navigate = (href: string) => {
     onOpenChange(false);
@@ -58,22 +56,18 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]">
+    <div className='fixed inset-0 z-50 flex items-start justify-center pt-[20vh]'>
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-foreground/20 backdrop-blur-sm"
+        className='absolute inset-0 bg-foreground/20 backdrop-blur-sm'
         onClick={() => onOpenChange(false)}
       />
 
       {/* Dialog */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-border bg-popover shadow-2xl animate-page-enter">
+      <div className='animate-page-enter relative w-full max-w-lg overflow-hidden rounded-xl border border-border bg-popover shadow-2xl'>
         {/* Search input */}
-        <div className="flex items-center border-b border-border px-4">
-          <HugeiconsIcon
-            icon={Search02Icon}
-            size={16}
-            className="text-muted-foreground"
-          />
+        <div className='flex items-center border-b border-border px-4'>
+          <HugeiconsIcon icon={Search02Icon} size={16} className='text-muted-foreground' />
           <input
             autoFocus
             value={query}
@@ -82,20 +76,18 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Search pages..."
-            className="flex-1 bg-transparent px-3 py-3 text-sm outline-none placeholder:text-muted-foreground"
+            placeholder='Search pages...'
+            className='flex-1 bg-transparent px-3 py-3 text-sm outline-none placeholder:text-muted-foreground'
           />
-          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+          <kbd className='rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground'>
             ESC
           </kbd>
         </div>
 
         {/* Results */}
-        <div className="max-h-64 overflow-y-auto p-2">
+        <div className='max-h-64 overflow-y-auto p-2'>
           {filtered.length === 0 ? (
-            <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-              No results found.
-            </p>
+            <p className='px-3 py-6 text-center text-sm text-muted-foreground'>No results found.</p>
           ) : (
             filtered.map((page, i) => (
               <button

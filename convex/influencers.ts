@@ -1,7 +1,7 @@
 import { v } from 'convex/values';
 
-import { requireAuth } from './auth';
 import { mutation, query } from './_generated/server';
+import { requireAuth } from './auth';
 
 export const getInfluencers = query({
   args: {
@@ -11,8 +11,8 @@ export const getInfluencers = query({
         v.literal('compliant'),
         v.literal('non-compliant'),
         v.literal('pending'),
-        v.literal('under-review')
-      )
+        v.literal('under-review'),
+      ),
     ),
     region: v.optional(v.string()),
   },
@@ -28,9 +28,7 @@ export const getInfluencers = query({
     // Apply additional filters in memory
     let filtered = influencers;
     if (args.complianceStatus) {
-      filtered = filtered.filter(
-        (i) => i.complianceStatus === args.complianceStatus
-      );
+      filtered = filtered.filter((i) => i.complianceStatus === args.complianceStatus);
     }
     if (args.region) {
       filtered = filtered.filter((i) => i.region === args.region);
@@ -69,23 +67,13 @@ export const getInfluencerStats = query({
     const all = await ctx.db.query('influencers').collect();
 
     const totalInfluencers = all.length;
-    const totalEstimatedTax = all.reduce(
-      (sum, i) => sum + (i.taxLiability ?? 0),
-      0
-    );
-    const totalEstimatedRevenue = all.reduce(
-      (sum, i) => sum + (i.estimatedAnnualRevenue ?? 0),
-      0
-    );
-    const compliant = all.filter(
-      (i) => i.complianceStatus === 'compliant'
-    ).length;
+    const totalEstimatedTax = all.reduce((sum, i) => sum + (i.taxLiability ?? 0), 0);
+    const totalEstimatedRevenue = all.reduce((sum, i) => sum + (i.estimatedAnnualRevenue ?? 0), 0);
+    const compliant = all.filter((i) => i.complianceStatus === 'compliant').length;
     const complianceRate =
-      totalInfluencers > 0
-        ? Math.round((compliant / totalInfluencers) * 100)
-        : 0;
+      totalInfluencers > 0 ? Math.round((compliant / totalInfluencers) * 100) : 0;
     const pendingAssessments = all.filter(
-      (i) => i.complianceStatus === 'pending' || i.complianceStatus === 'under-review'
+      (i) => i.complianceStatus === 'pending' || i.complianceStatus === 'under-review',
     ).length;
     const youtubeCount = all.filter((i) => i.platform === 'youtube').length;
     const tiktokCount = all.filter((i) => i.platform === 'tiktok').length;
@@ -124,8 +112,8 @@ export const createInfluencer = mutation({
         v.literal('compliant'),
         v.literal('non-compliant'),
         v.literal('pending'),
-        v.literal('under-review')
-      )
+        v.literal('under-review'),
+      ),
     ),
     region: v.optional(
       v.union(
@@ -144,8 +132,8 @@ export const createInfluencer = mutation({
         v.literal('Western North'),
         v.literal('Oti'),
         v.literal('North East'),
-        v.literal('Savannah')
-      )
+        v.literal('Savannah'),
+      ),
     ),
     notes: v.optional(v.string()),
   },
@@ -183,8 +171,8 @@ export const updateInfluencer = mutation({
         v.literal('compliant'),
         v.literal('non-compliant'),
         v.literal('pending'),
-        v.literal('under-review')
-      )
+        v.literal('under-review'),
+      ),
     ),
     region: v.optional(
       v.union(
@@ -203,8 +191,8 @@ export const updateInfluencer = mutation({
         v.literal('Western North'),
         v.literal('Oti'),
         v.literal('North East'),
-        v.literal('Savannah')
-      )
+        v.literal('Savannah'),
+      ),
     ),
     notes: v.optional(v.string()),
   },
@@ -213,7 +201,7 @@ export const updateInfluencer = mutation({
     const { id, ...updates } = args;
     // Remove undefined values
     const cleanUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([, v]) => v !== undefined)
+      Object.entries(updates).filter(([, v]) => v !== undefined),
     );
     await ctx.db.patch(id, cleanUpdates);
   },
