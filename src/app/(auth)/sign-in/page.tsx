@@ -3,6 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { authClient } from '@/lib/auth-client';
 
 export default function SignInPage() {
@@ -151,50 +154,50 @@ export default function SignInPage() {
           <form onSubmit={handleSubmit} className='space-y-5'>
             {mode === 'signUp' && (
               <div className='space-y-2'>
-                <label
+                <Label
                   htmlFor='name'
                   className='text-xs font-medium tracking-wider text-muted-foreground uppercase'
                 >
                   Full Name
-                </label>
-                <input
+                </Label>
+                <Input
                   id='name'
                   type='text'
                   placeholder='Officer Name'
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className='w-full rounded-lg border border-input bg-card px-4 py-2.5 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none'
+                  className='h-10 bg-card px-4'
                 />
               </div>
             )}
 
             <div className='space-y-2'>
-              <label
+              <Label
                 htmlFor='email'
                 className='text-xs font-medium tracking-wider text-muted-foreground uppercase'
               >
                 Email Address
-              </label>
-              <input
+              </Label>
+              <Input
                 id='email'
                 type='email'
                 placeholder='officer@gra.gov.gh'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className='w-full rounded-lg border border-input bg-card px-4 py-2.5 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none'
+                className='h-10 bg-card px-4'
               />
             </div>
 
             <div className='space-y-2'>
-              <label
+              <Label
                 htmlFor='password'
                 className='text-xs font-medium tracking-wider text-muted-foreground uppercase'
               >
                 Password
-              </label>
-              <input
+              </Label>
+              <Input
                 id='password'
                 type='password'
                 placeholder='Enter your password'
@@ -202,14 +205,14 @@ export default function SignInPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className='w-full rounded-lg border border-input bg-card px-4 py-2.5 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none'
+                className='h-10 bg-card px-4'
               />
             </div>
 
-            <button
+            <Button
               type='submit'
               disabled={loading}
-              className='relative w-full overflow-hidden rounded-lg bg-[oklch(0.22_0.04_250)] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[oklch(0.28_0.04_250)] disabled:opacity-50'
+              className='h-10 w-full bg-[oklch(0.22_0.04_250)] text-white hover:bg-[oklch(0.28_0.04_250)]'
             >
               {loading ? (
                 <span className='flex items-center justify-center gap-2'>
@@ -221,7 +224,7 @@ export default function SignInPage() {
               ) : (
                 'Create Account'
               )}
-            </button>
+            </Button>
           </form>
 
           <div className='relative'>
@@ -233,18 +236,19 @@ export default function SignInPage() {
             </div>
           </div>
 
-          <button
+          <Button
             type='button'
             onClick={() => {
               setMode(mode === 'signIn' ? 'signUp' : 'signIn');
               setError('');
             }}
-            className='w-full rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted'
+            variant='outline'
+            className='h-10 w-full'
           >
             {mode === 'signIn'
               ? "Don't have an account? Sign up"
               : 'Already have an account? Sign in'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
