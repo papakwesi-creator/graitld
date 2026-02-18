@@ -22,6 +22,17 @@ const ThemeProviderContext = createContext<ThemeProviderState>({
   setTheme: () => null,
 });
 
+/**
+ * Provides theme state to descendants, synchronizes the selected theme with localStorage, and applies the corresponding `light`/`dark` class to the document root.
+ *
+ * Reads a saved theme from localStorage on mount. When the theme changes, updates the documentElement's classes (removing any existing `light`/`dark`), optionally disables CSS transitions briefly to avoid animation glitches, and if `theme` is `'system'` and `enableSystem` is true, uses the OS color-scheme preference to choose `light` or `dark`. Exposes a context value `{ theme, setTheme }` where `setTheme` persists the new theme to localStorage and updates state.
+ *
+ * @param children - React node(s) rendered inside the provider
+ * @param defaultTheme - Initial theme used when no saved value exists (default: `'light'`)
+ * @param enableSystem - Whether to honor the system color-scheme when `theme` is `'system'` (default: `true`)
+ * @param disableTransitionOnChange - When true, briefly disables root CSS transitions during theme changes to avoid visual glitches (default: `true`)
+ * @returns The ThemeProvider element that supplies theme context to its children
+ */
 export function ThemeProvider({
   children,
   defaultTheme = 'light',

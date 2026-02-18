@@ -49,7 +49,12 @@ type LookupHistoryEntry = {
   timestamp: number;
 };
 
-// Deterministic mock data based on handle string
+/**
+ * Provides deterministic mock channel metrics for a given channel handle or URL.
+ *
+ * @param query - Channel handle, username, or full URL (YouTube or TikTok). The function will normalize the input and infer the platform (defaults to YouTube when not explicit).
+ * @returns A ChannelData mock object containing metrics and metadata for the resolved handle, or `null` if the input does not resolve to a valid handle.
+ */
 function mockSocialBladeAPI(query: string): Promise<ChannelData | null> {
   return new Promise((resolve) => {
     setTimeout(
@@ -151,7 +156,13 @@ function formatCurrency(value: number): string {
   return `GH\u20B5${value.toLocaleString()}`;
 }
 
-// ── Page Component ───────────────────────────────────────────────────
+/**
+ * Renders the Channel Lookup page UI for searching influencer channels, viewing mocked Social Blade metrics, and adding a channel to the system.
+ *
+ * Displays a search form, loading and error states, a detailed result card with metrics and tax preview, recent lookups, and controls to add the found channel as an influencer.
+ *
+ * @returns The React element for the channel lookup page.
+ */
 
 export default function ChannelLookupPage() {
   const createInfluencer = useMutation(api.influencers.createInfluencer);
@@ -518,7 +529,16 @@ export default function ChannelLookupPage() {
   );
 }
 
-// ── Metric Tile ──────────────────────────────────────────────────────
+/**
+ * Render a compact metric card showing an icon, uppercase label, primary value, and an optional detail line.
+ *
+ * @param icon - Icon component to render at the start of the card
+ * @param label - Short descriptor shown in uppercase above the main value
+ * @param value - Primary metric text displayed prominently
+ * @param detail - Optional supplementary text shown below the primary value
+ * @param detailPositive - When `true`, styles `detail` with a success color; when `false`, styles it with a destructive color; when omitted, uses a muted style
+ * @returns A JSX element representing the metric card
+ */
 
 function MetricTile({
   icon,

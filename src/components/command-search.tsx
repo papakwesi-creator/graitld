@@ -36,6 +36,13 @@ interface CommandSearchProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Render a searchable command dialog that lists dashboard pages and navigates to a page when selected.
+ *
+ * @param open - Whether the dialog is currently open
+ * @param onOpenChange - Callback invoked when the dialog open state should change
+ * @returns A JSX element rendering a CommandDialog with a searchable list of pages; selecting an item closes the dialog and navigates to that page's `href`.
+ */
 export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
   const router = useRouter();
 

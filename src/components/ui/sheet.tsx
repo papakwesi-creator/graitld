@@ -37,6 +37,17 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
   );
 }
 
+/**
+ * Renders the sheet's popup content inside a portal with its overlay and optional close control.
+ *
+ * The component sets data-slot and data-side attributes for styling, composes layout and animation
+ * utility classes, forwards remaining props to the underlying popup primitive, and conditionally
+ * renders a positioned close button.
+ *
+ * @param side - One of 'top', 'right', 'bottom', or 'left' determining the sheet's anchored side (default: 'right')
+ * @param showCloseButton - When `true`, includes a positioned close button inside the content (default: `true`)
+ * @returns A React element containing the sheet portal, overlay, popup content, and optional close button
+ */
 function SheetContent({
   className,
   children,
@@ -74,6 +85,14 @@ function SheetContent({
   );
 }
 
+/**
+ * Renders the sheet header container.
+ *
+ * Applies base flex column layout and gap, merges any provided `className`, and forwards remaining props to the underlying `div`.
+ *
+ * @param className - Additional CSS class names to append to the header's default classes
+ * @returns A `div` element used as the sheet header container
+ */
 function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -84,6 +103,14 @@ function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+/**
+ * Renders the sheet footer container that pushes its content to the end of the sheet and applies base footer layout.
+ *
+ * Merges the provided `className` with internal layout classes and forwards all other `div` props to the underlying element.
+ *
+ * @param className - Additional class names to merge with the footer's default classes
+ * @returns The footer `div` element for use inside a sheet
+ */
 function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div

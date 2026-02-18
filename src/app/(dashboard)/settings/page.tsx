@@ -21,7 +21,13 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// ── Settings Page ────────────────────────────────────────────────────
+/**
+ * Renders the settings page UI with tabbed sections for Profile, Appearance, Activity Log, and About.
+ *
+ * Uses the current theme from `useTheme()` and provides it to the Appearance section; also fetches recent audit logs and supplies them to the Activity section. The default active tab is Profile.
+ *
+ * @returns A React element containing the complete settings page and its tabbed content.
+ */
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -61,7 +67,15 @@ export default function SettingsPage() {
   );
 }
 
-// ── Profile Section ──────────────────────────────────────────────────
+/**
+ * Render the profile information and account management section for the current user.
+ *
+ * Renders editable fields for full name and email with a simulated save flow that shows saving and success states, an avatar derived from the name, role and department readouts, and a "Danger Zone" area to request account deletion.
+ *
+ * Clicking "Save Changes" simulates a save operation and shows a transient success message. Clicking "Request Deletion" shows an alert requiring administrator approval.
+ *
+ * @returns The rendered JSX element for the profile section.
+ */
 
 function ProfileSection() {
   // In a production app, this would come from the auth session
@@ -209,7 +223,16 @@ function ProfileSection() {
   );
 }
 
-// ── Appearance Section ───────────────────────────────────────────────
+/**
+ * Renders the Appearance settings panel allowing the user to preview and select a theme.
+ *
+ * Renders three theme options (Light, Dark, System) with live previews and an active indicator,
+ * and displays non-interactive display option toggles (Compact Mode and Animations).
+ *
+ * @param theme - The currently selected theme id; expected values are `'light'`, `'dark'`, or `'system'`.
+ * @param setTheme - Callback invoked with the selected theme id (`'light' | 'dark' | 'system'`) when a theme option is chosen.
+ * @returns A React element containing the appearance settings UI.
+ */
 
 function AppearanceSection({
   theme,
@@ -327,6 +350,16 @@ type AuditLog = {
   timestamp: number;
 };
 
+/**
+ * Render the Activity Log section displaying recent audit entries, a loading skeleton, or an empty-state message.
+ *
+ * When `logs` is `undefined`, a loading skeleton is rendered. When `logs` is an empty array, a centered
+ * empty-state message is shown. When `logs` contains entries, each entry displays the actor (`userName` or
+ * "System"), a human-readable action label, an optional entity type badge, optional details, and a formatted timestamp.
+ *
+ * @param logs - Array of audit log entries to display, or `undefined` while loading
+ * @returns A React element representing the activity log section
+ */
 function ActivitySection({ logs }: { logs: AuditLog[] | undefined }) {
   if (logs === undefined) {
     return (
@@ -394,7 +427,15 @@ function ActivitySection({ logs }: { logs: AuditLog[] | undefined }) {
   );
 }
 
-// ── About Section ────────────────────────────────────────────────────
+/**
+ * Render the About section of the Settings page.
+ *
+ * Renders three informational cards: branding and basic project details, system
+ * information (frontend, backend, auth, styling, charts, icons), and a short
+ * purpose description for the dashboard.
+ *
+ * @returns A JSX element containing branding, system information, and purpose cards for the Settings page
+ */
 
 function AboutSection() {
   return (
@@ -447,7 +488,13 @@ function AboutSection() {
   );
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────
+/**
+ * Renders a two-column information row with an uppercase label on the left and a value on the right.
+ *
+ * @param label - The left-side label text (rendered uppercase and styled as a muted label)
+ * @param value - The right-side value text (rendered as the main value)
+ * @returns A JSX element containing the labeled row
+ */
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -460,6 +507,16 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+/**
+ * Renders a binary toggle switch that manages its own checked state.
+ *
+ * The switch initializes its state from `defaultChecked`, updates its visual and
+ * `aria-checked` state when toggled, and ignores click interactions when `disabled` is true.
+ *
+ * @param defaultChecked - Initial checked state of the switch
+ * @param disabled - When true, the switch is non-interactive and appears disabled
+ * @returns A JSX element rendering the toggle switch; `aria-checked` reflects the current checked state
+ */
 function ToggleSwitch({
   defaultChecked,
   disabled,
@@ -489,6 +546,18 @@ function ToggleSwitch({
   );
 }
 
+/**
+ * Render a compact visual indicator for an audit/activity action string.
+ *
+ * Maps common action keywords to distinct icons or symbols:
+ * - contains "create" or "add": a small green plus sign
+ * - contains "delete" or "remove": a small destructive minus sign
+ * - contains "update" or "edit": a settings icon
+ * - otherwise: a clock icon
+ *
+ * @param action - The action text used to determine which icon to display
+ * @returns A JSX element representing the action icon or symbol
+ */
 function ActionIcon({ action }: { action: string }) {
   const size = 12;
   const className = 'text-muted-foreground';
@@ -505,10 +574,22 @@ function ActionIcon({ action }: { action: string }) {
   return <HugeiconsIcon icon={Clock01Icon} size={size} className={className} />;
 }
 
+/**
+ * Convert an action identifier into a human-readable label.
+ *
+ * @param action - The action identifier (typically snake_case or underscore-separated)
+ * @returns The action with underscores replaced by spaces and the first letter of each word lowercased
+ */
 function formatAction(action: string): string {
   return action.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toLowerCase());
 }
 
+/**
+ * Format a Unix timestamp into a concise human-readable relative time or a localized date.
+ *
+ * @param ts - Timestamp in milliseconds since the Unix epoch
+ * @returns `Just now` for times under 60 seconds; `Xm ago` for minutes; `Xh ago` for hours; `Xd ago` for days (up to 6 days); otherwise a localized date string in `en-GB` format like `12 Feb 2024`
+ */
 function formatTimestamp(ts: number): string {
   const now = Date.now();
   const diff = now - ts;

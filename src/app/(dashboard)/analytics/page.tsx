@@ -26,6 +26,11 @@ const COMPLIANCE_COLORS: Record<string, string> = {
   'under-review': 'oklch(0.6 0.12 200)',
 };
 
+/**
+ * Render a placeholder layout showing four skeleton cards used during loading.
+ *
+ * @returns A React element containing a responsive two-column grid with four large skeleton blocks
+ */
 function AnalyticsSkeleton() {
   return (
     <div className='space-y-6'>
@@ -38,6 +43,15 @@ function AnalyticsSkeleton() {
   );
 }
 
+/**
+ * Render the analytics dashboard with summary metrics, charts, and risk assessments.
+ *
+ * Renders summary cards for key metrics, a tax-gap vertical bar chart, a compliance distribution pie chart,
+ * a regional distribution bar list, and an audit risk assessment list of top influencers. Shows skeleton UI
+ * while metrics are loading and contextual placeholder messages when specific datasets are empty.
+ *
+ * @returns The page JSX element containing summary cards, tax-gap analysis, compliance distribution, regional distribution, and audit risk assessment.
+ */
 export default function AnalyticsPage() {
   const metrics = useQuery(api.analytics.getDashboardMetrics);
   const compliance = useQuery(api.analytics.getComplianceBreakdown);

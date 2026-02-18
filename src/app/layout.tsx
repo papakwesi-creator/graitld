@@ -31,6 +31,12 @@ export const metadata: Metadata = {
     'Tax estimation and management system for the Ghana Revenue Authority — assess, track, and manage influencer tax liabilities.',
 };
 
+/**
+ * App root layout that applies global fonts, provides theme context, and wraps pages with the Convex client.
+ *
+ * @param children - React nodes to render within the application's layout.
+ * @returns The root `<html>` element containing a `<body>` with global font classes and providers that supply theme and Convex client context to `children`.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

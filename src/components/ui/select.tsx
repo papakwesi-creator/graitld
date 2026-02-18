@@ -9,6 +9,12 @@ import { UnfoldMoreIcon, Tick02Icon, ArrowUp01Icon, ArrowDown01Icon } from "@hug
 
 const Select = SelectPrimitive.Root
 
+/**
+ * Group wrapper for select items that applies base spacing and forwards all props.
+ *
+ * @param className - Additional CSS classes merged with the component's default spacing classes
+ * @returns The rendered SelectPrimitive.Group element with `data-slot="select-group"`, a merged `className`, and all other props forwarded
+ */
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
     <SelectPrimitive.Group
@@ -19,6 +25,11 @@ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   )
 }
 
+/**
+ * Renders the selected option's content inside the select trigger.
+ *
+ * @returns The rendered `SelectPrimitive.Value` element that displays the current selection.
+ */
 function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   return (
     <SelectPrimitive.Value
@@ -29,6 +40,12 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   )
 }
 
+/**
+ * Trigger element for the custom Select that displays the selected value and a right-aligned expand icon.
+ *
+ * @param size - Visual size of the trigger; `"sm"` renders a smaller trigger, `"default"` renders the standard size.
+ * @returns A configured `SelectPrimitive.Trigger` element that renders `children`, applies sizing and styling, and includes an expand icon.
+ */
 function SelectTrigger({
   className,
   size = "default",
@@ -57,6 +74,16 @@ function SelectTrigger({
   )
 }
 
+/**
+ * Render the portalized popup content for the select, positioned and aligned relative to the trigger.
+ *
+ * @param side - Preferred side of the trigger to place the popup. Defaults to `"bottom"`.
+ * @param sideOffset - Offset in pixels from the chosen side. Defaults to `4`.
+ * @param align - Alignment of the popup relative to the trigger. Defaults to `"center"`.
+ * @param alignOffset - Alignment offset in pixels. Defaults to `0`.
+ * @param alignItemWithTrigger - If `true`, align the popup's width/position with the trigger. Defaults to `true`.
+ * @returns The rendered Select popup element (portalized, positioned, and scrollable).
+ */
 function SelectContent({
   className,
   children,
@@ -96,6 +123,11 @@ function SelectContent({
   )
 }
 
+/**
+ * Renders a styled group label for a Select menu.
+ *
+ * @returns A `SelectPrimitive.GroupLabel` element with `data-slot="select-label"` and a merged `className` that combines base label styles (`text-muted-foreground px-1.5 py-1 text-xs`) with any provided `className`.
+ */
 function SelectLabel({
   className,
   ...props
@@ -109,6 +141,15 @@ function SelectLabel({
   )
 }
 
+/**
+ * A selectable item for the custom Select component.
+ *
+ * Renders an item container with the provided content and a selection indicator.
+ *
+ * @param className - Optional additional class names to apply to the item container.
+ * @param children - Content to display inside the item (label, icon, etc.).
+ * @returns A React element representing a selectable item containing the provided children and a selection indicator.
+ */
 function SelectItem({
   className,
   children,
@@ -135,6 +176,11 @@ function SelectItem({
   )
 }
 
+/**
+ * Renders a horizontal visual separator between select items or groups.
+ *
+ * @returns A styled separator element for use within the custom Select
+ */
 function SelectSeparator({
   className,
   ...props
@@ -148,6 +194,13 @@ function SelectSeparator({
   )
 }
 
+/**
+ * Scroll-up control used inside the Select dropdown.
+ *
+ * Renders a styled scroll-up button with an up-arrow icon.
+ *
+ * @returns A React element representing the scroll-up button for the select popup.
+ */
 function SelectScrollUpButton({
   className,
   ...props
@@ -163,6 +216,13 @@ function SelectScrollUpButton({
   )
 }
 
+/**
+ * Renders the scroll-down control for the select dropdown.
+ *
+ * Forwards all props to the underlying ScrollDownArrow primitive and merges the provided `className` with internal styles.
+ *
+ * @returns The scroll-down button element containing a down arrow icon.
+ */
 function SelectScrollDownButton({
   className,
   ...props
