@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
 
@@ -17,6 +17,9 @@ type ThemeProviderState = {
   setTheme: (theme: Theme) => void;
 };
 
+const isTheme = (value: string | null): value is Theme =>
+  value === 'dark' || value === 'light' || value === 'system';
+
 const ThemeProviderContext = createContext<ThemeProviderState>({
   theme: 'light',
   setTheme: () => null,
@@ -30,44 +33,46 @@ export function ThemeProvider({
   disableTransitionOnChange = true,
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return defaultTheme;
+    const stored = localStorage.getItem('theme');
+    return isTheme(stored) ? stored : defaultTheme;
+  });
 
-  useEffect(() => {
-    const stored = localStorage.getItem('theme') as Theme | null;
-    if (stored) {
-      setTheme(stored);
-    }
-  }, []);
-
-  useEffect(() => {
+  const applyTheme = (nextTheme: Theme) => {
+    if (typeof window === 'undefined') return;
     const root = window.document.documentElement;
 
     if (disableTransitionOnChange) {
       root.style.setProperty('transition', 'none');
-      // Force a reflow
       void root.offsetHeight;
       requestAnimationFrame(() => {
         root.style.removeProperty('transition');
       });
     }
 
-    root.classList.remove('light', 'dark');
+    const resolvedTheme =
+      nextTheme === 'system' && enableSystem
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+        : nextTheme;
 
-    if (theme === 'system' && enableSystem) {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-      root.classList.add(systemTheme);
+    if (attribute === 'class') {
+      root.classList.remove('light', 'dark');
+      root.classList.add(resolvedTheme);
     } else {
-      root.classList.add(theme);
+      root.setAttribute(attribute, resolvedTheme);
     }
-  }, [theme, enableSystem, disableTransitionOnChange]);
+    root.style.colorScheme = resolvedTheme;
+  };
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem('theme', theme);
-      setTheme(theme);
+    setTheme: (nextTheme: Theme) => {
+      localStorage.setItem('theme', nextTheme);
+      setThemeState(nextTheme);
+      applyTheme(nextTheme);
     },
   };
 
