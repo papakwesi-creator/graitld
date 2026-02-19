@@ -39,6 +39,13 @@ const pageTitles: Record<string, { title: string; description: string }> = {
   },
 };
 
+/**
+ * Render the dashboard header with the current page title and description, a search trigger, and a theme toggle.
+ *
+ * Pressing Cmd/Ctrl+K toggles the search UI. The search button opens the CommandSearch component; the theme button toggles between light and dark modes.
+ *
+ * @returns A JSX element containing the header and the CommandSearch component bound to the header's search state.
+ */
 export function DashboardHeader() {
   const pathname = usePathname();
   const page = pageTitles[pathname] ?? {

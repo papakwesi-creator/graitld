@@ -5,6 +5,11 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Renders the root container for a tab group.
+ *
+ * @returns The Tabs root element to be mounted as the tab group container
+ */
 function Tabs({
   className,
   orientation = "horizontal",
@@ -38,6 +43,14 @@ const tabsListVariants = cva(
   }
 )
 
+/**
+ * Render a Tabs list wrapper that applies variant-driven styling and forwards all native list props.
+ *
+ * The `variant` controls the visual appearance of the list (e.g., "default" or "line") and is reflected on the element.
+ *
+ * @param variant - Visual variant of the list; supported values include `"default"` and `"line"`. Defaults to `"default"`.
+ * @returns The rendered Tabs list element with variant styling and forwarded props.
+ */
 function TabsList({
   className,
   variant = "default",
@@ -53,6 +66,15 @@ function TabsList({
   )
 }
 
+/**
+ * Renders an individual tab trigger for use inside a TabsList.
+ *
+ * The element includes variant- and orientation-aware styling, sets `data-slot="tabs-trigger"`,
+ * and forwards all other props to the underlying tab primitive.
+ *
+ * @param className - Additional class names to merge with the component's styling
+ * @returns A tab trigger element with variant-aware styling and forwarded props
+ */
 function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   return (
     <TabsPrimitive.Tab
@@ -69,6 +91,11 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   )
 }
 
+/**
+ * Renders the content panel for a tab, applying base layout and typographic styles and merging any custom `className`.
+ *
+ * @returns A React element representing the tab's content panel
+ */
 function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (
     <TabsPrimitive.Panel

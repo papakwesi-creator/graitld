@@ -49,10 +49,24 @@ const REGIONS = [
   'Savannah',
 ] as const;
 
+/**
+ * Format a numeric amount as a Ghanaian cedi currency string.
+ *
+ * @param value - The amount in Ghanaian cedi to format
+ * @returns The amount prefixed with `GH₵` and formatted with locale-specific thousands separators
+ */
 function formatCurrency(value: number): string {
   return `GH\u20B5${value.toLocaleString()}`;
 }
 
+/**
+ * Renders a compact badge for an influencer's compliance status.
+ *
+ * The displayed label replaces any hyphen in the status with a space and is capitalized by the UI.
+ *
+ * @param status - Compliance status; commonly one of: `compliant`, `non-compliant`, `pending`, `under-review`
+ * @returns A styled span element showing the status label; unknown statuses render with a muted style
+ */
 function StatusBadge({ status }: { status: string }) {
   const classes: Record<string, string> = {
     'compliant': 'status-compliant',
@@ -83,6 +97,14 @@ function PlatformBadge({ platform }: { platform: string }) {
   );
 }
 
+/**
+ * Renders the Influencers management page with listing, client-side filtering, and an add-influencer UI.
+ *
+ * The component fetches influencers, allows text/platform/status filtering, and provides controls to create
+ * and remove influencers via mutations; it also includes a sheet-driven form for adding new influencers.
+ *
+ * @returns The React element for the Influencers page.
+ */
 export default function InfluencersPage() {
   const influencers = useQuery(api.influencers.getInfluencers, {});
   const createInfluencer = useMutation(api.influencers.createInfluencer);
