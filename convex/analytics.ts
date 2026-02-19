@@ -104,34 +104,8 @@ export const getRevenueByMonth = query({
   args: {},
   handler: async (ctx) => {
     await requireAuth(ctx);
-    // Return mock monthly data for chart rendering
-    // In production, this would aggregate from taxAssessments by month
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
-    const influencers = await ctx.db.query('influencers').collect();
-    const totalMonthly = influencers.reduce((sum, i) => sum + (i.estimatedMonthlyRevenue ?? 0), 0);
-
-    // Generate a trend line based on actual total
-    return months.map((month, i) => {
-      const factor = 0.7 + Math.sin(i * 0.5) * 0.3;
-      return {
-        month,
-        revenue: Math.round(totalMonthly * factor),
-        tax: Math.round(totalMonthly * factor * 0.25),
-      };
-    });
+    // Historical monthly series is not yet modeled in the database.
+    // Return an empty dataset instead of synthetic values.
+    return [];
   },
 });

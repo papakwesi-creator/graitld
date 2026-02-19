@@ -49,22 +49,21 @@ export default function AnalyticsPage() {
     return <AnalyticsSkeleton />;
   }
 
-  // Tax gap: estimated vs collected (mock collected as 60% of estimated)
-  const taxGapData = [
+  const assessmentData = [
     {
-      label: 'Estimated Tax',
-      value: metrics.totalTaxLiability,
-      fill: 'oklch(0.45 0.14 160)',
+      label: 'Approved',
+      value: metrics.approvedAssessments,
+      fill: 'var(--success)',
     },
     {
-      label: 'Collected (est.)',
-      value: Math.round(metrics.totalTaxLiability * 0.6),
-      fill: 'oklch(0.72 0.12 80)',
+      label: 'Pending',
+      value: metrics.pendingAssessments,
+      fill: 'var(--warning)',
     },
     {
-      label: 'Tax Gap',
-      value: Math.round(metrics.totalTaxLiability * 0.4),
-      fill: 'oklch(0.55 0.22 27)',
+      label: 'Disputed',
+      value: metrics.disputedAssessments,
+      fill: 'var(--destructive)',
     },
   ];
 
@@ -111,49 +110,45 @@ export default function AnalyticsPage() {
       </div>
 
       <div className='grid gap-6 lg:grid-cols-2'>
-        {/* Tax gap analysis */}
+        {/* Assessment status */}
         <Card>
           <CardHeader>
             <CardTitle className='font-heading text-sm font-semibold tracking-wider text-muted-foreground uppercase'>
-              Tax Gap Analysis
+              Assessment Status
             </CardTitle>
           </CardHeader>
           <CardContent>
-          {metrics.totalTaxLiability > 0 ? (
+          {assessmentData.some((item) => item.value > 0) ? (
             <ResponsiveContainer width='100%' height={280}>
-              <BarChart data={taxGapData} layout='vertical'>
+              <BarChart data={assessmentData} layout='vertical'>
                 <CartesianGrid
                   strokeDasharray='3 3'
-                  stroke='oklch(0.88 0.01 85)'
+                  stroke='var(--border)'
                   horizontal={false}
                 />
                 <XAxis
                   type='number'
                   tick={{ fontSize: 11 }}
-                  stroke='oklch(0.5 0 0)'
-                  tickFormatter={(v) => `GH\u20B5${(v / 1000).toFixed(0)}K`}
+                  stroke='var(--muted-foreground)'
                 />
                 <YAxis
                   dataKey='label'
                   type='category'
                   tick={{ fontSize: 11 }}
-                  stroke='oklch(0.5 0 0)'
+                  stroke='var(--muted-foreground)'
                   width={100}
                 />
                 <Tooltip
-                  formatter={(value: number | string | undefined) => {
-                    const numeric = typeof value === 'number' ? value : Number(value ?? 0);
-                    return `GH\u20B5${numeric.toLocaleString()}`;
-                  }}
+                  formatter={(value: number | string | undefined) => Number(value ?? 0)}
                   contentStyle={{
-                    backgroundColor: 'oklch(0.995 0.002 85)',
-                    border: '1px solid oklch(0.88 0.01 85)',
+                    backgroundColor: 'var(--popover)',
+                    border: '1px solid var(--border)',
                     borderRadius: '8px',
                     fontSize: '12px',
                   }}
                 />
                 <Bar dataKey='value' radius={[0, 4, 4, 0]}>
-                  {taxGapData.map((entry, index) => (
+                  {assessmentData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Bar>
@@ -161,7 +156,7 @@ export default function AnalyticsPage() {
             </ResponsiveContainer>
           ) : (
             <div className='flex h-64 items-center justify-center text-sm text-muted-foreground'>
-              No tax data available yet.
+              No assessment data available yet.
             </div>
           )}
           </CardContent>

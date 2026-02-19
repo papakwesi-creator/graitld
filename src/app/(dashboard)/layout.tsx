@@ -16,8 +16,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <AppSidebar />
       <SidebarInset>
         <DashboardHeader />
-        <main className='flex-1 px-6 pt-4 pb-8'>
-          <div className='animate-page-enter'>{children}</div>
+        <main className='min-h-[calc(100svh-5rem)] flex-1 px-6 pt-4 pb-8'>
+          <div>{children}</div>
         </main>
       </SidebarInset>
     </SidebarProvider>
