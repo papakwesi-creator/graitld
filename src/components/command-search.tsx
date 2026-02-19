@@ -11,7 +11,16 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 
 const pages = [
   { title: 'Overview', href: '/', icon: DashboardSquare02Icon },
@@ -27,94 +36,44 @@ interface CommandSearchProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Render a searchable command dialog that lists dashboard pages and navigates to a page when selected.
+ *
+ * @param open - Whether the dialog is currently open
+ * @param onOpenChange - Callback invoked when the dialog open state should change
+ * @returns A JSX element rendering a CommandDialog with a searchable list of pages; selecting an item closes the dialog and navigates to that page's `href`.
+ */
 export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
   const router = useRouter();
-  const [query, setQuery] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const filtered = pages.filter((p) =>
-    p.title.toLowerCase().includes(query.toLowerCase())
-  );
 
   const navigate = (href: string) => {
     onOpenChange(false);
     router.push(href as Route);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex((i) => Math.min(i + 1, filtered.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === 'Enter' && filtered[selectedIndex]) {
-      navigate(filtered[selectedIndex].href);
-    } else if (e.key === 'Escape') {
-      onOpenChange(false);
-    }
-  };
-
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-foreground/20 backdrop-blur-sm"
-        onClick={() => onOpenChange(false)}
-      />
-
-      {/* Dialog */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-border bg-popover shadow-2xl animate-page-enter">
-        {/* Search input */}
-        <div className="flex items-center border-b border-border px-4">
-          <HugeiconsIcon
-            icon={Search02Icon}
-            size={16}
-            className="text-muted-foreground"
-          />
-          <input
-            autoFocus
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setSelectedIndex(0);
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="Search pages..."
-            className="flex-1 bg-transparent px-3 py-3 text-sm outline-none placeholder:text-muted-foreground"
-          />
-          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-            ESC
-          </kbd>
-        </div>
-
-        {/* Results */}
-        <div className="max-h-64 overflow-y-auto p-2">
-          {filtered.length === 0 ? (
-            <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-              No results found.
-            </p>
-          ) : (
-            filtered.map((page, i) => (
-              <button
-                key={page.href}
-                onClick={() => navigate(page.href)}
-                onMouseEnter={() => setSelectedIndex(i)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                  i === selectedIndex
-                    ? 'bg-accent/10 text-accent'
-                    : 'text-foreground hover:bg-muted'
-                }`}
-              >
+    <CommandDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title='Search pages'
+      description='Search the dashboard and jump to a page.'
+      className='sm:max-w-lg'
+    >
+      <Command>
+        <CommandInput autoFocus placeholder='Search pages...' />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup>
+            <div className='px-2 py-1.5 text-xs font-medium text-muted-foreground'>Pages</div>
+            {pages.map((page) => (
+              <CommandItem key={page.href} value={page.title} onSelect={() => navigate(page.href)}>
                 <HugeiconsIcon icon={page.icon} size={16} />
                 <span>{page.title}</span>
-              </button>
-            ))
-          )}
-        </div>
-      </div>
-    </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </Command>
+    </CommandDialog>
   );
 }

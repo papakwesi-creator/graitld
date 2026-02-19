@@ -14,6 +14,12 @@ import { cn } from '@/lib/utils';
 
 const Select = SelectPrimitive.Root;
 
+/**
+ * Group wrapper for select items that applies base spacing and forwards all props.
+ *
+ * @param className - Additional CSS classes merged with the component's default spacing classes
+ * @returns The rendered SelectPrimitive.Group element with `data-slot="select-group"`, a merged `className`, and all other props forwarded
+ */
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
     <SelectPrimitive.Group
@@ -24,6 +30,11 @@ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   );
 }
 
+/**
+ * Renders the selected option's content inside the select trigger.
+ *
+ * @returns The rendered `SelectPrimitive.Value` element that displays the current selection.
+ */
 function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   return (
     <SelectPrimitive.Value
@@ -34,6 +45,12 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   );
 }
 
+/**
+ * Trigger element for the custom Select that displays the selected value and a right-aligned expand icon.
+ *
+ * @param size - Visual size of the trigger; `"sm"` renders a smaller trigger, `"default"` renders the standard size.
+ * @returns A configured `SelectPrimitive.Trigger` element that renders `children`, applies sizing and styling, and includes an expand icon.
+ */
 function SelectTrigger({
   className,
   size = 'default',
@@ -47,7 +64,7 @@ function SelectTrigger({
       data-slot='select-trigger'
       data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 data-[placeholder]:text-muted-foreground data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex w-fit items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
@@ -66,6 +83,16 @@ function SelectTrigger({
   );
 }
 
+/**
+ * Render the portalized popup content for the select, positioned and aligned relative to the trigger.
+ *
+ * @param side - Preferred side of the trigger to place the popup. Defaults to `"bottom"`.
+ * @param sideOffset - Offset in pixels from the chosen side. Defaults to `4`.
+ * @param align - Alignment of the popup relative to the trigger. Defaults to `"center"`.
+ * @param alignOffset - Alignment offset in pixels. Defaults to `0`.
+ * @param alignItemWithTrigger - If `true`, align the popup's width/position with the trigger. Defaults to `true`.
+ * @returns The rendered Select popup element (portalized, positioned, and scrollable).
+ */
 function SelectContent({
   className,
   children,
@@ -92,8 +119,9 @@ function SelectContent({
       >
         <SelectPrimitive.Popup
           data-slot='select-content'
+          data-align-trigger={alignItemWithTrigger}
           className={cn(
-            'relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
+            'relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
             className,
           )}
           {...props}
@@ -107,6 +135,11 @@ function SelectContent({
   );
 }
 
+/**
+ * Renders a styled group label for a Select menu.
+ *
+ * @returns A `SelectPrimitive.GroupLabel` element with `data-slot="select-label"` and a merged `className` that combines base label styles (`text-muted-foreground px-1.5 py-1 text-xs`) with any provided `className`.
+ */
 function SelectLabel({ className, ...props }: SelectPrimitive.GroupLabel.Props) {
   return (
     <SelectPrimitive.GroupLabel
@@ -117,12 +150,21 @@ function SelectLabel({ className, ...props }: SelectPrimitive.GroupLabel.Props) 
   );
 }
 
+/**
+ * A selectable item for the custom Select component.
+ *
+ * Renders an item container with the provided content and a selection indicator.
+ *
+ * @param className - Optional additional class names to apply to the item container.
+ * @param children - Content to display inside the item (label, icon, etc.).
+ * @returns A React element representing a selectable item containing the provided children and a selection indicator.
+ */
 function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Props) {
   return (
     <SelectPrimitive.Item
       data-slot='select-item'
       className={cn(
-        "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className,
       )}
       {...props}
@@ -141,6 +183,11 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
   );
 }
 
+/**
+ * Renders a horizontal visual separator between select items or groups.
+ *
+ * @returns A styled separator element for use within the custom Select
+ */
 function SelectSeparator({ className, ...props }: SelectPrimitive.Separator.Props) {
   return (
     <SelectPrimitive.Separator
@@ -151,6 +198,13 @@ function SelectSeparator({ className, ...props }: SelectPrimitive.Separator.Prop
   );
 }
 
+/**
+ * Scroll-up control used inside the Select dropdown.
+ *
+ * Renders a styled scroll-up button with an up-arrow icon.
+ *
+ * @returns A React element representing the scroll-up button for the select popup.
+ */
 function SelectScrollUpButton({
   className,
   ...props
@@ -169,6 +223,13 @@ function SelectScrollUpButton({
   );
 }
 
+/**
+ * Renders the scroll-down control for the select dropdown.
+ *
+ * Forwards all props to the underlying ScrollDownArrow primitive and merges the provided `className` with internal styles.
+ *
+ * @returns The scroll-down button element containing a down arrow icon.
+ */
 function SelectScrollDownButton({
   className,
   ...props

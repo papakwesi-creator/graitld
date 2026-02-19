@@ -31,8 +31,8 @@ export default defineSchema({
         v.literal('compliant'),
         v.literal('non-compliant'),
         v.literal('pending'),
-        v.literal('under-review')
-      )
+        v.literal('under-review'),
+      ),
     ),
 
     // Location
@@ -53,8 +53,8 @@ export default defineSchema({
         v.literal('Western North'),
         v.literal('Oti'),
         v.literal('North East'),
-        v.literal('Savannah')
-      )
+        v.literal('Savannah'),
+      ),
     ),
 
     // Metadata
@@ -82,7 +82,7 @@ export default defineSchema({
       v.literal('draft'),
       v.literal('pending'),
       v.literal('approved'),
-      v.literal('disputed')
+      v.literal('disputed'),
     ),
     assessedBy: v.optional(v.string()), // user ID of the officer
     notes: v.optional(v.string()),

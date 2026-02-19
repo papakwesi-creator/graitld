@@ -61,11 +61,11 @@
    ============================================ */
 :root {
   /* Core surfaces */
-  --background: oklch(0.985 0.002 240);    /* cool white */
-  --foreground: oklch(0.14 0.05 260);      /* deep obsidian */
+  --background: oklch(0.985 0.002 240); /* cool white */
+  --foreground: oklch(0.14 0.05 260); /* deep obsidian */
 
   /* Cards */
-  --card: oklch(1 0 0);                    /* pure white */
+  --card: oklch(1 0 0); /* pure white */
   --card-foreground: oklch(0.14 0.05 260);
 
   /* Popovers */
@@ -73,7 +73,7 @@
   --popover-foreground: oklch(0.14 0.05 260);
 
   /* Primary — Corporate Navy */
-  --primary: oklch(0.2 0.06 265);          /* rich navy */
+  --primary: oklch(0.2 0.06 265); /* rich navy */
   --primary-foreground: oklch(0.98 0 0);
 
   /* Secondary — Cool Gray */
@@ -107,14 +107,14 @@
   /* Borders & Input */
   --border: oklch(0.9 0.02 240);
   --input: oklch(0.9 0.02 240);
-  --ring: oklch(0.2 0.06 265);             /* navy ring */
+  --ring: oklch(0.2 0.06 265); /* navy ring */
 
   /* Charts */
-  --chart-1: oklch(0.2 0.06 265);          /* navy */
-  --chart-2: oklch(0.6 0.18 150);          /* green */
-  --chart-3: oklch(0.7 0.16 80);           /* gold */
-  --chart-4: oklch(0.6 0.22 25);           /* red */
-  --chart-5: oklch(0.55 0.2 240);          /* blue */
+  --chart-1: oklch(0.2 0.06 265); /* navy */
+  --chart-2: oklch(0.6 0.18 150); /* green */
+  --chart-3: oklch(0.7 0.16 80); /* gold */
+  --chart-4: oklch(0.6 0.22 25); /* red */
+  --chart-5: oklch(0.55 0.2 240); /* blue */
 
   --radius: 0.5rem;
 
@@ -136,11 +136,11 @@
    ============================================ */
 .dark {
   /* Core surfaces */
-  --background: oklch(0.12 0.04 265);      /* deep obsidian navy */
-  --foreground: oklch(0.96 0.01 240);      /* cool white */
+  --background: oklch(0.12 0.04 265); /* deep obsidian navy */
+  --foreground: oklch(0.96 0.01 240); /* cool white */
 
   /* Cards */
-  --card: oklch(0.15 0.04 265);            /* slight lift */
+  --card: oklch(0.15 0.04 265); /* slight lift */
   --card-foreground: oklch(0.96 0.01 240);
 
   /* Popovers */
@@ -157,7 +157,7 @@
 
   /* Muted */
   --muted: oklch(0.2 0.04 265);
-  --muted-foreground: oklch(0.65 0.04 260);
+  --muted-foreground: oklch(0.74 0.03 260);
 
   /* Accent — Glowing Blue */
   --accent: oklch(0.22 0.06 260);
@@ -182,19 +182,19 @@
   /* Borders & Input */
   --border: oklch(0.22 0.04 265);
   --input: oklch(0.22 0.04 265);
-  --ring: oklch(0.6 0.18 250);             /* electric blue ring */
+  --ring: oklch(0.6 0.18 250); /* electric blue ring */
 
   /* Charts */
-  --chart-1: oklch(0.6 0.18 250);          /* electric blue */
-  --chart-2: oklch(0.65 0.18 150);         /* neon green */
-  --chart-3: oklch(0.75 0.14 85);          /* gold */
-  --chart-4: oklch(0.6 0.22 25);           /* red */
-  --chart-5: oklch(0.7 0.12 300);          /* purple */
+  --chart-1: oklch(0.6 0.18 250); /* electric blue */
+  --chart-2: oklch(0.65 0.18 150); /* neon green */
+  --chart-3: oklch(0.75 0.14 85); /* gold */
+  --chart-4: oklch(0.6 0.22 25); /* red */
+  --chart-5: oklch(0.7 0.12 300); /* purple */
 
   /* Sidebar */
-  --sidebar: oklch(0.1 0.03 265);          /* darker than bg */
-  --sidebar-foreground: oklch(0.7 0.04 260);
-  --sidebar-primary: oklch(0.75 0.14 85);  /* gold active */
+  --sidebar: oklch(0.1 0.03 265); /* darker than bg */
+  --sidebar-foreground: oklch(0.82 0.02 250);
+  --sidebar-primary: oklch(0.75 0.14 85); /* gold active */
   --sidebar-primary-foreground: oklch(0.12 0.04 265);
   --sidebar-accent: oklch(0.18 0.04 265);
   --sidebar-accent-foreground: oklch(0.96 0.01 240);
@@ -209,7 +209,12 @@
   body {
     @apply bg-background text-foreground font-sans tracking-tight;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading tracking-tight text-foreground font-bold;
   }
 }
@@ -238,12 +243,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--gold) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
   opacity: 0.5;
 }
 
@@ -254,12 +254,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--gold) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
   opacity: 0.5;
 }
 
@@ -268,12 +263,12 @@
    ============================================ */
 .bg-grid-pattern {
   background-size: 40px 40px;
-  background-image: 
+  background-image:
     linear-gradient(to right, oklch(0.5 0 0 / 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, oklch(0.5 0 0 / 0.03) 1px, transparent 1px);
 }
 .dark .bg-grid-pattern {
-  background-image: 
+  background-image:
     linear-gradient(to right, oklch(1 0 0 / 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, oklch(1 0 0 / 0.03) 1px, transparent 1px);
 }
@@ -284,11 +279,9 @@
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -300,12 +293,24 @@
   opacity: 0;
   animation: fade-in-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
-.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
-.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
-.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
-.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-children > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+.stagger-children > *:nth-child(3) {
+  animation-delay: 100ms;
+}
+.stagger-children > *:nth-child(4) {
+  animation-delay: 150ms;
+}
+.stagger-children > *:nth-child(5) {
+  animation-delay: 200ms;
+}
+.stagger-children > *:nth-child(6) {
+  animation-delay: 250ms;
+}
 
 /* ============================================
    Interactive Elements
@@ -326,12 +331,12 @@
 /* ============================================
    Hide number input spinners
    ============================================ */
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
-  -webkit-appearance: none; 
-  margin: 0; 
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
-input[type=number] {
+input[type='number'] {
   -moz-appearance: textfield;
 }
 

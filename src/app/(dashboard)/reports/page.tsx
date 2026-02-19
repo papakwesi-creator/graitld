@@ -4,10 +4,11 @@ import { Download01Icon, File01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from 'convex/react';
 import { useState } from 'react';
+import { api } from '~convex/_generated/api';
 
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { api } from '~convex/_generated/api';
 
 type ReportType = 'tax-summary' | 'compliance-overview' | 'influencer-list' | 'revenue-analysis';
 
@@ -34,6 +35,15 @@ const REPORT_TYPES: { value: ReportType; label: string; description: string }[] 
   },
 ];
 
+/**
+ * Render the Reports page and provide UI for generating and downloading predefined reports.
+ *
+ * Fetches dashboard metrics, influencer records, and compliance breakdown; displays skeletons while loading,
+ * renders a card for each report type with a "Generate & Download" action, and shows a report history placeholder.
+ * The page includes a handler that builds a plain-text report for the selected type and triggers a client-side download.
+ *
+ * @returns The Reports page React element
+ */
 export default function ReportsPage() {
   const metrics = useQuery(api.analytics.getDashboardMetrics);
   const influencers = useQuery(api.influencers.getInfluencers, {});
@@ -44,14 +54,14 @@ export default function ReportsPage() {
   // Show skeleton while data is loading
   if (metrics === undefined || influencers === undefined || compliance === undefined) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-5 w-80" />
-        <div className="grid gap-4 sm:grid-cols-2">
+      <div className='space-y-6'>
+        <Skeleton className='h-5 w-80' />
+        <div className='grid gap-4 sm:grid-cols-2'>
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-36 rounded-xl" />
+            <Skeleton key={i} className='h-36 rounded-xl' />
           ))}
         </div>
-        <Skeleton className="h-40 rounded-xl" />
+        <Skeleton className='h-40 rounded-xl' />
       </div>
     );
   }
@@ -103,7 +113,7 @@ ${'─'.repeat(90)}
 ${influencers
   .map(
     (i) =>
-      `${i.name.padEnd(25)} ${i.platform.padEnd(10)} @${i.handle.padEnd(19)} ${(i.complianceStatus ?? 'pending').padEnd(15)} GH₵${(i.estimatedAnnualRevenue ?? 0).toLocaleString()}`
+      `${i.name.padEnd(25)} ${i.platform.padEnd(10)} @${i.handle.padEnd(19)} ${(i.complianceStatus ?? 'pending').padEnd(15)} GH₵${(i.estimatedAnnualRevenue ?? 0).toLocaleString()}`,
   )
   .join('\n')}
 `;
@@ -137,51 +147,54 @@ By Platform:
   };
 
   return (
-    <div className="space-y-6 stagger-children">
-      <p className="text-sm text-muted-foreground">
-        Generate and download reports for tax analysis, compliance tracking, and influencer management.
+    <div className='stagger-children space-y-6'>
+      <p className='text-sm text-muted-foreground'>
+        Generate and download reports for tax analysis, compliance tracking, and influencer
+        management.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className='grid gap-4 sm:grid-cols-2'>
         {REPORT_TYPES.map((report) => (
-          <div
+          <Card
             key={report.value}
-            className="group rounded-xl border border-border/60 bg-card p-5 transition-all hover:border-accent/30 hover:shadow-md"
+            className='group transition-all hover:border-accent/30 hover:shadow-md'
           >
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent/10 group-hover:text-accent">
+            <CardContent className='flex items-start gap-4'>
+              <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent/10 group-hover:text-accent'>
                 <HugeiconsIcon icon={File01Icon} size={20} />
               </div>
-              <div className="flex-1">
-                <h3 className="font-heading text-sm font-semibold">{report.label}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {report.description}
-                </p>
+              <div className='flex-1'>
+                <h3 className='font-heading text-sm font-semibold'>{report.label}</h3>
+                <p className='mt-1 text-xs text-muted-foreground'>{report.description}</p>
                 <Button
                   onClick={() => generateReport(report.value)}
                   disabled={generating || metrics === undefined}
-                  variant="outline"
-                  className="mt-4 gap-2 text-xs"
-                  size="sm"
+                  variant='outline'
+                  className='mt-4 gap-2 text-xs'
+                  size='sm'
                 >
                   <HugeiconsIcon icon={Download01Icon} size={14} />
                   Generate &amp; Download
                 </Button>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       {/* Recently generated placeholder */}
-      <div className="rounded-xl border border-border/60 bg-card p-5">
-        <h3 className="mb-4 font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Report History
-        </h3>
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          Generated reports will appear here. Reports are downloaded directly to your device.
-        </p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className='font-heading text-sm font-semibold tracking-wider text-muted-foreground uppercase'>
+            Report History
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className='py-8 text-center text-sm text-muted-foreground'>
+            Generated reports will appear here. Reports are downloaded directly to your device.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

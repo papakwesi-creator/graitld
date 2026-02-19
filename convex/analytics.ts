@@ -1,5 +1,5 @@
-import { requireAuth } from './auth';
 import { query } from './_generated/server';
+import { requireAuth } from './auth';
 
 export const getDashboardMetrics = query({
   args: {},
@@ -11,22 +11,13 @@ export const getDashboardMetrics = query({
     const totalInfluencers = influencers.length;
     const totalEstimatedRevenue = influencers.reduce(
       (sum, i) => sum + (i.estimatedAnnualRevenue ?? 0),
-      0
+      0,
     );
-    const totalTaxLiability = influencers.reduce(
-      (sum, i) => sum + (i.taxLiability ?? 0),
-      0
-    );
-    const compliant = influencers.filter(
-      (i) => i.complianceStatus === 'compliant'
-    ).length;
+    const totalTaxLiability = influencers.reduce((sum, i) => sum + (i.taxLiability ?? 0), 0);
+    const compliant = influencers.filter((i) => i.complianceStatus === 'compliant').length;
     const complianceRate =
-      totalInfluencers > 0
-        ? Math.round((compliant / totalInfluencers) * 100)
-        : 0;
-    const pendingAssessments = assessments.filter(
-      (a) => a.status === 'pending'
-    ).length;
+      totalInfluencers > 0 ? Math.round((compliant / totalInfluencers) * 100) : 0;
+    const pendingAssessments = assessments.filter((a) => a.status === 'pending').length;
 
     return {
       totalInfluencers,
@@ -34,10 +25,8 @@ export const getDashboardMetrics = query({
       totalTaxLiability,
       complianceRate,
       pendingAssessments,
-      approvedAssessments: assessments.filter((a) => a.status === 'approved')
-        .length,
-      disputedAssessments: assessments.filter((a) => a.status === 'disputed')
-        .length,
+      approvedAssessments: assessments.filter((a) => a.status === 'approved').length,
+      disputedAssessments: assessments.filter((a) => a.status === 'disputed').length,
     };
   },
 });
@@ -82,9 +71,9 @@ export const getComplianceBreakdown = query({
     const influencers = await ctx.db.query('influencers').collect();
 
     const statusMap: Record<string, number> = {
-      compliant: 0,
+      'compliant': 0,
       'non-compliant': 0,
-      pending: 0,
+      'pending': 0,
       'under-review': 0,
     };
 
@@ -106,10 +95,7 @@ export const getTopInfluencers = query({
     await requireAuth(ctx);
     const influencers = await ctx.db.query('influencers').collect();
     return influencers
-      .sort(
-        (a, b) =>
-          (b.estimatedAnnualRevenue ?? 0) - (a.estimatedAnnualRevenue ?? 0)
-      )
+      .sort((a, b) => (b.estimatedAnnualRevenue ?? 0) - (a.estimatedAnnualRevenue ?? 0))
       .slice(0, 10);
   },
 });
@@ -118,27 +104,8 @@ export const getRevenueByMonth = query({
   args: {},
   handler: async (ctx) => {
     await requireAuth(ctx);
-    // Return mock monthly data for chart rendering
-    // In production, this would aggregate from taxAssessments by month
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-
-    const influencers = await ctx.db.query('influencers').collect();
-    const totalMonthly = influencers.reduce(
-      (sum, i) => sum + (i.estimatedMonthlyRevenue ?? 0),
-      0
-    );
-
-    // Generate a trend line based on actual total
-    return months.map((month, i) => {
-      const factor = 0.7 + Math.sin(i * 0.5) * 0.3;
-      return {
-        month,
-        revenue: Math.round(totalMonthly * factor),
-        tax: Math.round(totalMonthly * factor * 0.25),
-      };
-    });
+    // Historical monthly series is not yet modeled in the database.
+    // Return an empty dataset instead of synthetic values.
+    return [];
   },
 });
