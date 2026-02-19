@@ -8,6 +8,10 @@ import { useQuery } from 'convex/react';
 import { api } from '~convex/_generated/api';
 
 import { useTheme } from '@/components/theme-provider';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
