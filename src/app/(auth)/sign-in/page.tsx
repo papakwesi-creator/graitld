@@ -8,6 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authClient } from '@/lib/auth-client';
 
+/**
+ * Render the authentication page for the GRA Tax Dashboard with sign-in and sign-up modes.
+ *
+ * Displays GRA branding and an authentication form that switches between "sign in" and "create account"
+ * modes, shows validation and error states, and manages loading state during submission. On successful
+ * authentication the page navigates to the application home.
+ *
+ * @returns The React element for the sign-in / sign-up page containing branding and the authentication form.
+ */
 export default function SignInPage() {
   const router = useRouter();
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');

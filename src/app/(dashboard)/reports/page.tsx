@@ -35,6 +35,15 @@ const REPORT_TYPES: { value: ReportType; label: string; description: string }[] 
   },
 ];
 
+/**
+ * Render the Reports page and provide UI for generating and downloading predefined reports.
+ *
+ * Fetches dashboard metrics, influencer records, and compliance breakdown; displays skeletons while loading,
+ * renders a card for each report type with a "Generate & Download" action, and shows a report history placeholder.
+ * The page includes a handler that builds a plain-text report for the selected type and triggers a client-side download.
+ *
+ * @returns The Reports page React element
+ */
 export default function ReportsPage() {
   const metrics = useQuery(api.analytics.getDashboardMetrics);
   const influencers = useQuery(api.influencers.getInfluencers, {});

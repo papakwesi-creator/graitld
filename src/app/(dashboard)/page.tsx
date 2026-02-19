@@ -19,12 +19,27 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
+/**
+ * Format a numeric amount (in Ghanaian cedi) into a compact, human-friendly currency string.
+ *
+ * @param value - The amount in Ghanaian cedi to format
+ * @returns A string prefixed with `GH₵`; values >= 1,000,000 use `X.XM`, values >= 1,000 use `X.XK`, otherwise the locale-formatted whole amount
+ */
 function formatCurrency(value: number): string {
   if (value >= 1_000_000) return `GH\u20B5${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `GH\u20B5${(value / 1_000).toFixed(1)}K`;
   return `GH\u20B5${value.toLocaleString()}`;
 }
 
+/**
+ * Render a metric card with a label, a prominent value, an optional subtitle, and a decorative gradient accent.
+ *
+ * @param label - Short uppercase label displayed above the value
+ * @param value - Primary metric displayed prominently (string or number)
+ * @param subtitle - Optional secondary text shown beneath the value
+ * @param accentClass - Optional CSS class applied to the value for emphasis (defaults to foreground color)
+ * @returns A React element representing the metric card
+ */
 function MetricCard({
   label,
   value,
@@ -56,6 +71,11 @@ function MetricCard({
   );
 }
 
+/**
+ * Render skeleton placeholders that mimic the dashboard layout while data is loading.
+ *
+ * @returns A React element containing placeholder skeleton cards arranged to match the dashboard's grid and chart areas.
+ */
 function DashboardSkeleton() {
   return (
     <div className='space-y-8 p-1'>
@@ -72,6 +92,13 @@ function DashboardSkeleton() {
   );
 }
 
+/**
+ * Renders the Overview dashboard for influencer analytics, including metric cards, revenue and tax charts, platform distribution, top influencers, and recent activity.
+ *
+ * Fetches required data via Convex queries and displays a loading skeleton until summary stats are available.
+ *
+ * @returns A JSX element representing the overview analytics dashboard.
+ */
 export default function OverviewPage() {
   const stats = useQuery(api.influencers.getInfluencerStats);
   const revenueData = useQuery(api.analytics.getRevenueByMonth);
