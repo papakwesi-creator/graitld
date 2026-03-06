@@ -66,7 +66,7 @@ function MetricCard({
         </div>
         {subtitle && <p className='mt-1 text-xs font-medium text-muted-foreground'>{subtitle}</p>}
       </CardContent>
-      <div className='absolute -top-6 -right-6 h-24 w-24 rounded-full bg-gradient-to-br from-white/5 to-white/0 blur-2xl dark:from-white/10' />
+      <div className='absolute -top-6 -right-6 h-24 w-24 rounded-full bg-linear-to-br from-white/5 to-white/0 blur-2xl dark:from-white/10' />
     </Card>
   );
 }
@@ -111,7 +111,7 @@ export default function OverviewPage() {
   }
 
   return (
-    <div className='stagger-children animate-page-enter mx-auto max-w-[1600px] space-y-8 p-1'>
+    <div className='stagger-children animate-page-enter mx-auto max-w-400 space-y-8 p-1'>
       {/* Metric cards */}
       <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
         <MetricCard
@@ -165,7 +165,7 @@ export default function OverviewPage() {
 
           <CardContent className='px-6 pb-6'>
             {revenueData && revenueData.length > 0 ? (
-              <div className='h-[300px] w-full'>
+              <div className='h-75 w-full'>
                 <ResponsiveContainer width='100%' height='100%'>
                   <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>
@@ -207,7 +207,7 @@ export default function OverviewPage() {
                         boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       }}
                       itemStyle={{ color: 'var(--foreground)' }}
-                      formatter={(value: any) => formatCurrency(Number(value))}
+                      formatter={(value) => formatCurrency(Number(value))}
                     />
                     <Area
                       type='monotone'
@@ -246,7 +246,7 @@ export default function OverviewPage() {
           </CardHeader>
           <CardContent className='px-6 pb-6'>
             {platformData && (platformData[0].value > 0 || platformData[1].value > 0) ? (
-              <div className='flex h-[300px] flex-col items-center justify-center'>
+              <div className='flex h-75 flex-col items-center justify-center'>
                 <ResponsiveContainer width='100%' height={220}>
                   <PieChart>
                     <Pie
@@ -372,7 +372,7 @@ export default function OverviewPage() {
             {recentLogs && recentLogs.length > 0 ? (
               <div className='relative space-y-6 pl-2'>
                 {/* Timeline line */}
-                <div className='absolute top-2 bottom-4 left-[11px] w-px bg-border/50' />
+                <div className='absolute top-2 bottom-4 left-2.75 w-px bg-border/50' />
 
                 {recentLogs.map((log) => (
                   <div key={log._id} className='relative flex items-start gap-4'>
