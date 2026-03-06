@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -493,6 +494,7 @@ function SidebarMenuButton({
     tooltip?: string | React.ComponentProps<typeof TooltipContent>;
   } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const { isMobile, state } = useSidebar();
+  const shouldWrapWithSheetClose = isMobile && !props.disabled && !props['aria-disabled'];
   const comp = useRender({
     defaultTagName: 'button',
     props: mergeProps<'button'>(
@@ -511,7 +513,7 @@ function SidebarMenuButton({
   });
 
   if (!tooltip) {
-    return comp;
+    return shouldWrapWithSheetClose ? <SheetClose render={comp} /> : comp;
   }
 
   if (typeof tooltip === 'string') {
@@ -522,7 +524,7 @@ function SidebarMenuButton({
 
   return (
     <Tooltip>
-      {comp}
+      {shouldWrapWithSheetClose ? <SheetClose render={comp} /> : comp}
       <TooltipContent
         side='right'
         align='center'
@@ -646,7 +648,9 @@ function SidebarMenuSubButton({
     size?: 'sm' | 'md';
     isActive?: boolean;
   }) {
-  return useRender({
+  const { isMobile } = useSidebar();
+  const shouldWrapWithSheetClose = isMobile && !props.disabled && !props['aria-disabled'];
+  const comp = useRender({
     defaultTagName: 'a',
     props: mergeProps<'a'>(
       {
@@ -665,6 +669,8 @@ function SidebarMenuSubButton({
       active: isActive,
     },
   });
+
+  return shouldWrapWithSheetClose ? <SheetClose render={comp} /> : comp;
 }
 
 export {

@@ -106,7 +106,7 @@ export function DashboardHeader() {
             <HugeiconsIcon icon={Search01Icon} size={18} />
           </Button>
 
-          <Separator orientation='vertical' className='mx-1 h-6' />
+          <Separator orientation='vertical' className='mx-1' />
 
           <Button
             onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
