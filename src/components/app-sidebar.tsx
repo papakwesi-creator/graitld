@@ -144,7 +144,7 @@ export const AppSidebar = () => {
             <SidebarMenuButton
               variant='destructive'
               onClick={handleSignOut}
-              className='group flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sidebar-foreground/60 transition-colors hover:bg-destructive/10 hover:text-destructive'
+              className='flex items-center gap-3'
             >
               <HugeiconsIcon
                 icon={Logout03Icon}
