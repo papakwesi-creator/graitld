@@ -27,6 +27,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
+// import { isAuthenticated } from '@/lib/auth-server';
 
 const PLATFORMS = ['youtube', 'tiktok'] as const;
 const COMPLIANCE_STATUSES = ['compliant', 'non-compliant', 'pending', 'under-review'] as const;
@@ -106,6 +107,7 @@ function PlatformBadge({ platform }: { platform: string }) {
  * @returns The React element for the Influencers page.
  */
 export default function InfluencersPage() {
+  // const isAuthenticated = isAuthenticated();
   const influencers = useQuery(api.influencers.getInfluencers, {});
   const createInfluencer = useMutation(api.influencers.createInfluencer);
   const deleteInfluencer = useMutation(api.influencers.deleteInfluencer);
@@ -223,7 +225,7 @@ export default function InfluencersPage() {
       </div>
 
       {/* Filters */}
-      <div className='flex flex-wrap gap-3'>
+      <div className='flex max-sm:flex-col flex-wrap gap-3'>
         <InputGroup className='min-w-50 flex-1 bg-card'>
           <InputGroupAddon align='inline-start'>
             <HugeiconsIcon icon={Search01Icon} size={14} className='text-muted-foreground' />
@@ -243,7 +245,7 @@ export default function InfluencersPage() {
             }
           }}
         >
-          <SelectTrigger className='min-w-[160px] bg-card'>
+          <SelectTrigger className='min-w-40 bg-card'>
             <SelectValue placeholder='All Platforms' />
           </SelectTrigger>
           <SelectContent>
@@ -263,7 +265,7 @@ export default function InfluencersPage() {
             }
           }}
         >
-          <SelectTrigger className='min-w-[160px] bg-card'>
+          <SelectTrigger className='min-w-40 bg-card'>
             <SelectValue placeholder='All Statuses' />
           </SelectTrigger>
           <SelectContent>
