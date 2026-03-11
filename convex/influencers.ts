@@ -35,9 +35,11 @@ const regionValidator = v.union(
   v.literal('Savannah'),
 );
 
+const platformValidator = v.union(v.literal('youtube'), v.literal('tiktok'));
+
 const influencerFields = {
   name: v.string(),
-  platform: v.union(v.literal('youtube'), v.literal('tiktok')),
+  platform: platformValidator,
   handle: v.string(),
   channelId: v.optional(v.string()),
   customUrl: v.optional(v.string()),
@@ -66,33 +68,38 @@ const influencerFields = {
 
 export const getInfluencers = query({
   args: {
-    platform: v.optional(v.union(v.literal('youtube'), v.literal('tiktok'))),
-    complianceStatus: v.optional(
-      v.union(
-        v.literal('compliant'),
-        v.literal('non-compliant'),
-        v.literal('pending'),
-        v.literal('under-review'),
-      ),
-    ),
+    platform: v.optional(platformValidator),
+    complianceStatus: v.optional(complianceStatusValidator),
     region: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await requireAuth(ctx);
-    const influencers = args.platform
-      ? await ctx.db
-          .query('influencers')
-          .withIndex('by_platform', (q) => q.eq('platform', args.platform!))
-          .collect()
-      : await ctx.db.query('influencers').collect();
 
-    // Apply additional filters in memory
-    let filtered = influencers;
-    if (args.complianceStatus) {
-      filtered = filtered.filter((i) => i.complianceStatus === args.complianceStatus);
+    let influencers;
+    if (args.platform === 'youtube') {
+      influencers = await ctx.db
+        .query('influencers')
+        .withIndex('by_platform', (q) => q.eq('platform', 'youtube'))
+        .collect();
+    } else if (args.platform === 'tiktok') {
+      influencers = await ctx.db
+        .query('influencers')
+        .withIndex('by_platform', (q) => q.eq('platform', 'tiktok'))
+        .collect();
+    } else {
+      influencers = await ctx.db.query('influencers').collect();
     }
+
+    let filtered = influencers;
+
+    if (args.complianceStatus) {
+      filtered = filtered.filter(
+        (influencer) => influencer.complianceStatus === args.complianceStatus,
+      );
+    }
+
     if (args.region) {
-      filtered = filtered.filter((i) => i.region === args.region);
+      filtered = filtered.filter((influencer) => influencer.region === args.region);
     }
 
     return filtered;
@@ -111,9 +118,11 @@ export const searchInfluencers = query({
   args: { searchTerm: v.string() },
   handler: async (ctx, args) => {
     await requireAuth(ctx);
+
     if (!args.searchTerm.trim()) {
       return await ctx.db.query('influencers').collect();
     }
+
     return await ctx.db
       .query('influencers')
       .withSearchIndex('search_name', (q) => q.search('name', args.searchTerm))
@@ -125,19 +134,29 @@ export const getInfluencerStats = query({
   args: {},
   handler: async (ctx) => {
     await requireAuth(ctx);
+
     const all = await ctx.db.query('influencers').collect();
 
     const totalInfluencers = all.length;
-    const totalEstimatedTax = all.reduce((sum, i) => sum + (i.taxLiability ?? 0), 0);
-    const totalEstimatedRevenue = all.reduce((sum, i) => sum + (i.estimatedAnnualRevenue ?? 0), 0);
-    const compliant = all.filter((i) => i.complianceStatus === 'compliant').length;
+    const totalEstimatedTax = all.reduce(
+      (sum, influencer) => sum + (influencer.taxLiability ?? 0),
+      0,
+    );
+    const totalEstimatedRevenue = all.reduce(
+      (sum, influencer) => sum + (influencer.estimatedAnnualRevenue ?? 0),
+      0,
+    );
+    const compliant = all.filter(
+      (influencer) => influencer.complianceStatus === 'compliant',
+    ).length;
     const complianceRate =
       totalInfluencers > 0 ? Math.round((compliant / totalInfluencers) * 100) : 0;
     const pendingAssessments = all.filter(
-      (i) => i.complianceStatus === 'pending' || i.complianceStatus === 'under-review',
+      (influencer) =>
+        influencer.complianceStatus === 'pending' || influencer.complianceStatus === 'under-review',
     ).length;
-    const youtubeCount = all.filter((i) => i.platform === 'youtube').length;
-    const tiktokCount = all.filter((i) => i.platform === 'tiktok').length;
+    const youtubeCount = all.filter((influencer) => influencer.platform === 'youtube').length;
+    const tiktokCount = all.filter((influencer) => influencer.platform === 'tiktok').length;
 
     return {
       totalInfluencers,
@@ -155,13 +174,13 @@ export const createInfluencer = mutation({
   args: influencerFields,
   handler: async (ctx, args) => {
     await requireAuth(ctx);
-    const influencerId = await ctx.db.insert('influencers', {
+
+    return await ctx.db.insert('influencers', {
       ...args,
       complianceStatus: args.complianceStatus ?? 'pending',
       source: 'manual',
       lastDataRefresh: Date.now(),
     });
-    return influencerId;
   },
 });
 
@@ -174,17 +193,14 @@ export const updateInfluencer = mutation({
   },
   handler: async (ctx, args) => {
     await requireAuth(ctx);
+
     const { id, ...updates } = args;
-    // Remove undefined values
-    const cleanUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([, v]) => v !== undefined),
-    );
+    const cleanUpdates = removeUndefined(updates);
+
     await ctx.db.patch(id, cleanUpdates);
   },
 });
 
-<<<<<<< HEAD
-=======
 export const upsertYoutubeInfluencer = mutation({
   args: {
     name: v.string(),
@@ -213,20 +229,15 @@ export const upsertYoutubeInfluencer = mutation({
       .unique();
 
     const now = Date.now();
-    const complianceStatus: 'compliant' | 'non-compliant' | 'pending' | 'under-review' =
-      existing?.complianceStatus ?? 'pending';
-<<<<<<< HEAD
-    const sourceLookupValue = args.channelId;
-=======
-    const sourceLookupValue = args.sourceLookupValue;
->>>>>>> 47061f6 (import channel fixes)
-    const requiredFields = {
+    const complianceStatus = existing?.complianceStatus ?? ('pending' as const);
+
+    const baseFields = {
       name: args.name,
       platform: 'youtube' as const,
       handle: args.handle,
       channelId: args.channelId,
       source: 'youtube_api' as const,
-      sourceLookupValue,
+      sourceLookupValue: args.sourceLookupValue,
       sourceResolvedAt: now,
       lastDataRefresh: now,
       complianceStatus,
@@ -249,28 +260,19 @@ export const upsertYoutubeInfluencer = mutation({
 
     if (existing) {
       await ctx.db.patch(existing._id, {
-        ...requiredFields,
+        ...baseFields,
         ...optionalFields,
       });
       return existing._id;
     }
 
     return await ctx.db.insert('influencers', {
-      name: args.name,
-      platform: 'youtube',
-      handle: args.handle,
-      channelId: args.channelId,
-      source: 'youtube_api',
-      sourceLookupValue,
-      sourceResolvedAt: now,
-      lastDataRefresh: now,
-      complianceStatus,
+      ...baseFields,
       ...optionalFields,
     });
   },
 });
 
->>>>>>> 47061f6 (import channel fixes)
 export const deleteInfluencer = mutation({
   args: { id: v.id('influencers') },
   handler: async (ctx, args) => {
