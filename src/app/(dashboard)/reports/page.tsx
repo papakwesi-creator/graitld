@@ -31,7 +31,7 @@ const REPORT_TYPES: { value: ReportType; label: string; description: string }[] 
   {
     value: 'revenue-analysis',
     label: 'Revenue Analysis',
-    description: 'Estimated revenue breakdown by platform and region',
+    description: 'Estimated revenue breakdown where revenue data is available',
   },
 ];
 
@@ -113,7 +113,7 @@ ${'─'.repeat(90)}
 ${influencers
   .map(
     (i) =>
-      `${i.name.padEnd(25)} ${i.platform.padEnd(10)} @${i.handle.padEnd(19)} ${(i.complianceStatus ?? 'pending').padEnd(15)} GH₵${(i.estimatedAnnualRevenue ?? 0).toLocaleString()}`,
+      `${i.name.padEnd(25)} ${i.platform.padEnd(10)} @${i.handle.padEnd(19)} ${(i.complianceStatus ?? 'pending').padEnd(15)} ${i.estimatedAnnualRevenue !== undefined ? `GH₵${i.estimatedAnnualRevenue.toLocaleString()}` : 'N/A (public data)'}`,
   )
   .join('\n')}
 `;
@@ -126,6 +126,8 @@ ${influencers
         .reduce((s, i) => s + (i.estimatedAnnualRevenue ?? 0), 0);
 
       reportContent = `${header}REVENUE ANALYSIS
+
+Only records with stored revenue estimates are included below.
 
 By Platform:
   YouTube:  GH₵${youtubeRev.toLocaleString()}
@@ -150,7 +152,7 @@ By Platform:
     <div className='stagger-children space-y-6'>
       <p className='text-sm text-muted-foreground'>
         Generate and download reports for tax analysis, compliance tracking, and influencer
-        management.
+        management. Public YouTube imports do not include API-backed revenue estimates.
       </p>
 
       <div className='grid gap-4 sm:grid-cols-2'>

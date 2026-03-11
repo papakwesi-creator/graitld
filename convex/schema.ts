@@ -8,15 +8,20 @@ export default defineSchema({
     platform: v.union(v.literal('youtube'), v.literal('tiktok')),
     handle: v.string(),
     channelId: v.optional(v.string()),
+    customUrl: v.optional(v.string()),
     profileImageUrl: v.optional(v.string()),
+    description: v.optional(v.string()),
     email: v.optional(v.string()),
     phone: v.optional(v.string()),
 
     // Channel metrics
     subscribers: v.optional(v.number()),
+    subscriberCountHidden: v.optional(v.boolean()),
     totalViews: v.optional(v.number()),
     avgEngagementRate: v.optional(v.number()),
     totalVideos: v.optional(v.number()),
+    uploadsPlaylistId: v.optional(v.string()),
+    topicCategories: v.optional(v.array(v.string())),
 
     // Revenue & tax
     estimatedMonthlyRevenue: v.optional(v.number()),
@@ -58,11 +63,18 @@ export default defineSchema({
     ),
 
     // Metadata
+    source: v.optional(v.union(v.literal('manual'), v.literal('youtube_api'))),
+    sourceLookupValue: v.optional(v.string()),
+    sourceResolvedAt: v.optional(v.number()),
+    sourceRefreshError: v.optional(v.string()),
+    country: v.optional(v.string()),
+    channelCreatedAt: v.optional(v.number()),
     notes: v.optional(v.string()),
     lastAssessedAt: v.optional(v.number()),
     lastDataRefresh: v.optional(v.number()),
   })
     .index('by_platform', ['platform'])
+    .index('by_channelId', ['channelId'])
     .index('by_complianceStatus', ['complianceStatus'])
     .index('by_region', ['region'])
     .searchIndex('search_name', {

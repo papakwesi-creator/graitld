@@ -83,8 +83,8 @@ export const AppSidebar = () => {
   return (
     <Sidebar className='border-r border-sidebar-border bg-sidebar text-sidebar-foreground'>
       <SidebarHeader className='px-4 py-6'>
-        <div className='flex items-center gap-3.5'>
-          <Image alt='GRA logo' src='/logo.png' width={40} height={40} className='shadow' />
+        <div className='flex flex-col items-start gap-3.5'>
+          <Image alt='GRA logo' src='/logo.png' width={80} height={60} className='shadow' />
           <div className='flex flex-col gap-0.5'>
             <span className='font-heading text-sm font-bold tracking-tight text-sidebar-foreground'>
               Tax Dashboard

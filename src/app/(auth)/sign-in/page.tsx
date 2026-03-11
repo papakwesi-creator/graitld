@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +27,7 @@ export default function SignInPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -81,7 +82,7 @@ export default function SignInPage() {
         </div>
 
         {/* Kente accent stripe */}
-        <div className='absolute top-0 left-0 h-full w-[6px]'>
+        <div className='absolute top-0 left-0 h-full w-1.5'>
           <div
             className='h-full w-full'
             style={{
@@ -92,10 +93,14 @@ export default function SignInPage() {
         </div>
 
         <div className='relative z-10'>
-          <div className='flex items-center gap-4'>
-            <div className='flex h-14 w-14 items-center justify-center rounded-xl bg-[#D4A843] font-heading text-lg font-bold text-[#0C1B2A]'>
-              GRA
-            </div>
+          <div className='flex flex-col items-start gap-4'>
+            <Image
+              alt='GRA logo'
+              src='/logo.png'
+              width={80}
+              height={60}
+              className='rounded-xl bg-white/10 p-1'
+            />
             <div>
               <h2 className='font-heading text-xl font-bold text-white'>Ghana Revenue Authority</h2>
               <p className='text-sm text-white/50'>Influencer Tax Liability Dashboard</p>
@@ -136,10 +141,8 @@ export default function SignInPage() {
       <div className='flex w-full items-center justify-center bg-background px-6 lg:w-1/2'>
         <div className='w-full max-w-md space-y-8'>
           {/* Mobile logo */}
-          <div className='flex items-center gap-3 lg:hidden'>
-            <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-[#D4A843] font-heading text-sm font-bold text-[#0C1B2A]'>
-              GRA
-            </div>
+          <div className='flex flex-col items-start gap-3 lg:hidden'>
+            <Image alt='GRA logo' src='/logo.png' width={80} height={60} className='rounded-lg' />
             <span className='font-heading text-sm font-semibold'>GRA Tax Dashboard</span>
           </div>
 

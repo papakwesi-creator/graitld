@@ -246,7 +246,7 @@ export default function InfluencersPage() {
               }
             }}
           >
-            <SelectTrigger className='min-w-40 bg-card'>
+            <SelectTrigger className='w-full bg-card'>
               <SelectValue placeholder='All Platforms' />
             </SelectTrigger>
             <SelectContent>
@@ -266,7 +266,7 @@ export default function InfluencersPage() {
               }
             }}
           >
-            <SelectTrigger className='min-w-40 bg-card'>
+            <SelectTrigger className='w-full bg-card'>
               <SelectValue placeholder='All Statuses' />
             </SelectTrigger>
             <SelectContent>
