@@ -5,6 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from 'convex/react';
 import { api } from '~convex/_generated/api';
 
+import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -231,10 +232,14 @@ export function AboutSection() {
   return (
     <div className='space-y-6'>
       <div className='rounded-xl border border-border/60 bg-card p-6'>
-        <div className='flex items-center gap-4'>
-          <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gold font-heading text-sm font-bold text-gold-foreground'>
-            GRA
-          </div>
+        <div className='flex flex-col items-start gap-4'>
+          <Image
+            alt='GRA logo'
+            src='/logo.png'
+            width={80}
+            height={60}
+            className='shrink-0 rounded-lg'
+          />
           <div>
             <h2 className='font-heading text-base font-semibold'>GRA Influencer Tax Dashboard</h2>
             <p className='text-sm text-muted-foreground'>Version 1.0.0 — Final Year Project</p>
