@@ -31,6 +31,12 @@ function formatCurrency(value: number): string {
   return `GH\u20B5${value.toLocaleString()}`;
 }
 
+function formatCompactNumber(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return value.toLocaleString();
+}
+
 /**
  * Render a metric card with a label, a prominent value, an optional subtitle, and a decorative gradient accent.
  *
@@ -341,10 +347,14 @@ export default function OverviewPage() {
                     </div>
                     <div className='text-right'>
                       <span className='block font-mono text-sm font-medium text-foreground'>
-                        {formatCurrency(inf.estimatedAnnualRevenue ?? 0)}
+                        {inf.estimatedAnnualRevenue
+                          ? formatCurrency(inf.estimatedAnnualRevenue)
+                          : inf.totalViews
+                            ? `${formatCompactNumber(inf.totalViews)} views`
+                            : '--'}
                       </span>
                       <span className='text-[10px] tracking-wide text-muted-foreground uppercase'>
-                        Est. Revenue
+                        {inf.estimatedAnnualRevenue ? 'Est. Revenue' : 'Public Signal'}
                       </span>
                     </div>
                   </div>

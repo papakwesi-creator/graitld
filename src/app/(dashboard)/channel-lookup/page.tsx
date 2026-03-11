@@ -1,166 +1,148 @@
 'use client';
 
-import { Alert01Icon, Link01Icon, Search01Icon } from '@hugeicons/core-free-icons';
+import {
+  Alert01Icon,
+  CheckmarkCircle02Icon,
+  Link01Icon,
+  Search01Icon,
+} from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { useState } from 'react';
+import { useMutation } from 'convex/react';
+import Image from 'next/image';
+import { useMemo, useState } from 'react';
+import { api } from '~convex/_generated/api';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// ── Mock Social Blade API ────────────────────────────────────────────
-// Returns simulated channel data for any given handle/URL.
-// In production, this would call the real Social Blade or YouTube/TikTok APIs.
+const upsertYoutubeInfluencerRef = api.influencers.upsertYoutubeInfluencer as unknown as Parameters<
+  typeof useMutation
+>[0];
 
-type ChannelData = {
+type LookupResult = {
   name: string;
   handle: string;
-  platform: 'youtube' | 'tiktok';
-  profileImageUrl: string;
-  subscribers: number;
-  totalViews: number;
-  totalVideos: number;
-  avgEngagementRate: number;
-  estimatedMonthlyRevenue: number;
-  estimatedAnnualRevenue: number;
-  country: string;
-  channelCreated: string;
-  category: string;
-  recentGrowth: number; // subscriber growth % last 30d
-  grade: string; // Social Blade letter grade
+  channelId: string;
+  customUrl?: string;
+  profileImageUrl?: string;
+  description?: string;
+  subscribers?: number;
+  subscriberCountHidden: boolean;
+  totalViews?: number;
+  totalVideos?: number;
+  avgEngagementRate?: number;
+  country?: string;
+  channelCreatedAt?: number;
+  uploadsPlaylistId?: string;
+  topicCategories: string[];
 };
 
-type LookupHistoryEntry = {
-  handle: string;
-  platform: 'youtube' | 'tiktok';
-  name: string;
-  timestamp: number;
-};
+type LookupResponse = LookupResult | { error?: string };
 
-/**
- * Provides deterministic mock channel metrics for a given channel handle or URL.
- *
- * @param query - Channel handle, username, or full URL (YouTube or TikTok). The function will normalize the input and infer the platform (defaults to YouTube when not explicit).
- * @returns A ChannelData mock object containing metrics and metadata for the resolved handle, or `null` if the input does not resolve to a valid handle.
- */
-function mockSocialBladeAPI(query: string): Promise<ChannelData | null> {
-  return new Promise((resolve) => {
-    setTimeout(
-      () => {
-        // Parse platform from URL or default to youtube
-        let platform: 'youtube' | 'tiktok' = 'youtube';
-        let handle = query.trim();
-
-        if (handle.includes('tiktok.com') || handle.toLowerCase().includes('tiktok')) {
-          platform = 'tiktok';
-        }
-
-        // Strip URL parts
-        handle = handle
-          .replace(/https?:\/\/(www\.)?(youtube\.com|tiktok\.com)\/(channel\/|@|c\/)?/gi, '')
-          .replace(/\?.*$/, '')
-          .replace(/^@/, '')
-          .trim();
-
-        if (!handle) {
-          resolve(null);
-          return;
-        }
-
-        // Generate deterministic-ish mock data from handle
-        const seed = handle.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-        const rand = (min: number, max: number) =>
-          Math.floor((((seed * 9301 + 49297) % 233280) / 233280) * (max - min) + min);
-
-        const subscribers = rand(5000, 2500000);
-        const totalViews = subscribers * rand(50, 300);
-        const totalVideos = rand(50, 800);
-        const engRate = parseFloat((rand(10, 85) / 10).toFixed(1));
-        const monthlyRev = rand(500, 45000);
-
-        const grades = ['A++', 'A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C'];
-        const categories = [
-          'Entertainment',
-          'Comedy',
-          'Education',
-          'Music',
-          'Lifestyle',
-          'Technology',
-          'Gaming',
-          'Fashion',
-          'Food',
-          'Travel',
-        ];
-
-        const ghanaNames = [
-          'Kwame Asante',
-          'Ama Serwaa',
-          'Kofi Mensah',
-          'Abena Pokua',
-          'Yaw Boateng',
-          'Akosua Agyeman',
-          'Kwesi Appiah',
-          'Efua Sutherland',
-          'Nana Aba',
-          'Kojo Antwi',
-          'Adwoa Safo',
-          'Fiifi Coleman',
-        ];
-
-        resolve({
-          name: ghanaNames[seed % ghanaNames.length],
-          handle: `@${handle}`,
-          platform,
-          profileImageUrl: '',
-          subscribers,
-          totalViews,
-          totalVideos,
-          avgEngagementRate: engRate,
-          estimatedMonthlyRevenue: monthlyRev,
-          estimatedAnnualRevenue: monthlyRev * 12,
-          country: 'Ghana',
-          channelCreated: `${2015 + (seed % 8)}-${String((seed % 12) + 1).padStart(2, '0')}-15`,
-          category: categories[seed % categories.length],
-          recentGrowth: parseFloat((rand(-20, 150) / 10).toFixed(1)),
-          grade: grades[seed % grades.length],
-        });
-      },
-      1200 + Math.random() * 800,
-    ); // Simulate network latency
-  });
+function isLookupResult(data: LookupResponse): data is LookupResult {
+  return 'channelId' in data;
 }
 
-// ── Formatting helpers ───────────────────────────────────────────────
-
-function formatNumber(value: number): string {
+function formatNumber(value?: number) {
+  if (value === undefined) return '--';
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
   return value.toLocaleString();
 }
 
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `GH\u20B5${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `GH\u20B5${(value / 1_000).toFixed(1)}K`;
-  return `GH\u20B5${value.toLocaleString()}`;
+function formatDate(timestamp?: number) {
+  if (!timestamp) return '--';
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
-/**
- * Renders the Channel Lookup page UI for searching influencer channels, viewing mocked Social Blade metrics, and adding a channel to the system.
- *
- * Displays a search form, loading and error states, a detailed result card with metrics and tax preview, recent lookups, and controls to add the found channel as an influencer.
- *
- * @returns The React element for the channel lookup page.
- */
+function normalizeHandle(handle: string) {
+  return handle.startsWith('@') ? handle.slice(1) : handle;
+}
 
 export default function ChannelLookupPage() {
-  const [query, setQuery] = useState('');
-  const [hasAttempted, setHasAttempted] = useState(false);
+  const upsertYoutubeInfluencer = useMutation(upsertYoutubeInfluencerRef);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-    setHasAttempted(true);
+  const [query, setQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<LookupResult | null>(null);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
+
+  const hasLookup = useMemo(() => Boolean(result || error), [result, error]);
+
+  const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    setIsLoading(true);
+    setError(null);
+    setResult(null);
+    setImportMessage(null);
+
+    try {
+      const response = await fetch(`/api/youtube/channel?q=${encodeURIComponent(trimmed)}`, {
+        cache: 'no-store',
+      });
+      const data: LookupResponse = await response.json();
+
+      if (!response.ok || !isLookupResult(data)) {
+        setError(
+          ('error' in data ? data.error : undefined) ?? 'Failed to look up that YouTube channel.',
+        );
+        return;
+      }
+
+      setResult({ ...data });
+    } catch (lookupError) {
+      setError(lookupError instanceof Error ? lookupError.message : 'Lookup failed.');
+      setResult(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!result) return;
+
+    setIsImporting(true);
+    setImportMessage(null);
+
+    try {
+      await upsertYoutubeInfluencer({
+        name: result.name,
+        handle: normalizeHandle(result.handle),
+        channelId: result.channelId,
+        customUrl: result.customUrl,
+        profileImageUrl: result.profileImageUrl,
+        description: result.description,
+        subscribers: result.subscribers,
+        subscriberCountHidden: result.subscriberCountHidden,
+        totalViews: result.totalViews,
+        avgEngagementRate: result.avgEngagementRate,
+        totalVideos: result.totalVideos,
+        uploadsPlaylistId: result.uploadsPlaylistId,
+        topicCategories: result.topicCategories,
+        country: result.country,
+        channelCreatedAt: result.channelCreatedAt,
+      });
+
+      setImportMessage(
+        'Channel imported successfully. Existing records are updated by channel ID.',
+      );
+    } catch (importError) {
+      setError(importError instanceof Error ? importError.message : 'Import failed.');
+      setImportMessage(null);
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -169,11 +151,19 @@ export default function ChannelLookupPage() {
         <div className='mb-4'>
           <h2 className='font-heading text-base font-semibold'>Channel Lookup</h2>
           <p className='mt-1 text-sm text-muted-foreground'>
-            This feature is disabled until a verified live API integration is configured.
+            Look up public YouTube channel data by handle, channel ID, or URL, then import it into
+            the registry.
+          </p>
+          <p className='mt-2 text-xs text-muted-foreground'>
+            Revenue and monetization metrics are not exposed by the public YouTube Data API.
+          </p>
+          <p className='mt-1 text-xs text-muted-foreground'>
+            Supported inputs: `@handle`, `UC...` channel IDs, `youtube.com/@handle`,
+            `youtube.com/channel/...`, `youtube.com/user/...`, and `youtube.com/c/...`.
           </p>
         </div>
 
-        <form onSubmit={handleSearch} className='flex gap-3'>
+        <form onSubmit={handleSearch} className='flex gap-3 max-sm:flex-col'>
           <InputGroup className='flex-1 bg-background'>
             <InputGroupAddon align='inline-start'>
               <HugeiconsIcon icon={Search01Icon} size={16} className='text-muted-foreground' />
@@ -181,26 +171,157 @@ export default function ChannelLookupPage() {
             <InputGroupInput
               type='text'
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder='Enter channel handle or URL'
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder='Enter @handle, channel ID, or YouTube channel URL'
             />
           </InputGroup>
-          <Button type='submit' disabled={!query.trim()} className='gap-2' variant='outline'>
+          <Button
+            type='submit'
+            disabled={!query.trim() || isLoading}
+            className='gap-2'
+            variant='outline'
+          >
             <HugeiconsIcon icon={Link01Icon} size={16} />
-            Check
+            {isLoading ? 'Looking up...' : 'Check'}
           </Button>
         </form>
       </div>
 
-      {(hasAttempted || query.trim()) && (
+      {isLoading && (
+        <div className='rounded-xl border border-border/60 bg-card p-6'>
+          <div className='flex gap-4'>
+            <Skeleton className='h-16 w-16 rounded-full' />
+            <div className='flex-1 space-y-2'>
+              <Skeleton className='h-5 w-48' />
+              <Skeleton className='h-4 w-64' />
+              <Skeleton className='h-4 w-full' />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && error && (
         <div className='rounded-xl border border-warning/30 bg-warning/5 p-6'>
           <div className='mb-3 flex items-center gap-2'>
             <HugeiconsIcon icon={Alert01Icon} size={18} className='text-warning' />
-            <Badge className='bg-warning/15 text-warning'>Unavailable</Badge>
+            <Badge className='bg-warning/15 text-warning'>Lookup Failed</Badge>
           </div>
-          <p className='text-sm text-warning-foreground'>
-            Live channel lookup is not connected yet. No mocked or estimated channel data is shown.
-          </p>
+          <p className='text-sm text-warning-foreground'>{error}</p>
+        </div>
+      )}
+
+      {!isLoading && result && (
+        <div className='space-y-4 rounded-xl border border-border/60 bg-card p-6'>
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+            <div className='flex items-start gap-4'>
+              {result.profileImageUrl ? (
+                <Image
+                  src={result.profileImageUrl}
+                  alt={result.name}
+                  width={64}
+                  height={64}
+                  className='h-16 w-16 rounded-full border border-border/60 object-cover'
+                />
+              ) : (
+                <div className='flex h-16 w-16 items-center justify-center rounded-full border border-border/60 bg-muted text-sm font-semibold text-muted-foreground'>
+                  {result.name.slice(0, 1).toUpperCase()}
+                </div>
+              )}
+              <div className='space-y-2'>
+                <div>
+                  <h3 className='font-heading text-lg font-semibold'>{result.name}</h3>
+                  <p className='text-sm text-muted-foreground'>
+                    @{normalizeHandle(result.handle)}
+                    {result.customUrl ? ` • ${result.customUrl}` : ''}
+                  </p>
+                </div>
+                <div className='flex flex-wrap gap-2'>
+                  <Badge variant='outline'>YouTube</Badge>
+                  <Badge variant='outline'>Channel ID: {result.channelId}</Badge>
+                  {result.country ? <Badge variant='outline'>{result.country}</Badge> : null}
+                </div>
+              </div>
+            </div>
+
+            <Button onClick={handleImport} disabled={isImporting} className='gap-2'>
+              <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} />
+              {isImporting ? 'Importing...' : 'Import Channel'}
+            </Button>
+          </div>
+
+          {result.description ? (
+            <p className='text-sm leading-6 text-muted-foreground'>{result.description}</p>
+          ) : null}
+
+          <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+            <div className='rounded-lg border border-border/60 bg-background p-4'>
+              <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
+                Subscribers
+              </p>
+              <p className='mt-2 text-xl font-semibold'>
+                {result.subscriberCountHidden ? 'Hidden' : formatNumber(result.subscribers)}
+              </p>
+            </div>
+            <div className='rounded-lg border border-border/60 bg-background p-4'>
+              <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
+                Total Views
+              </p>
+              <p className='mt-2 text-xl font-semibold'>{formatNumber(result.totalViews)}</p>
+            </div>
+            <div className='rounded-lg border border-border/60 bg-background p-4'>
+              <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
+                Total Videos
+              </p>
+              <p className='mt-2 text-xl font-semibold'>{formatNumber(result.totalVideos)}</p>
+            </div>
+            <div className='rounded-lg border border-border/60 bg-background p-4'>
+              <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
+                Avg. Engagement
+              </p>
+              <p className='mt-2 text-xl font-semibold'>
+                {result.avgEngagementRate !== undefined ? `${result.avgEngagementRate}%` : '--'}
+              </p>
+            </div>
+          </div>
+
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <div className='rounded-lg border border-border/60 bg-background p-4'>
+              <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
+                Channel Created
+              </p>
+              <p className='mt-2 text-sm font-medium'>{formatDate(result.channelCreatedAt)}</p>
+            </div>
+            <div className='rounded-lg border border-border/60 bg-background p-4'>
+              <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
+                Revenue Data
+              </p>
+              <p className='mt-2 text-sm text-muted-foreground'>
+                Not available from public YouTube Data API lookup.
+              </p>
+            </div>
+          </div>
+
+          {result.topicCategories.length > 0 ? (
+            <div className='flex flex-wrap gap-2'>
+              {result.topicCategories.map((topic) => (
+                <Badge key={topic} variant='secondary' className='max-w-full truncate'>
+                  {topic}
+                </Badge>
+              ))}
+            </div>
+          ) : null}
+
+          {importMessage ? (
+            <div className='rounded-lg border border-success/30 bg-success/5 p-4 text-sm text-success'>
+              {importMessage}
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {!isLoading && !hasLookup && (
+        <div className='rounded-xl border border-dashed border-border/60 bg-muted/10 p-6 text-sm text-muted-foreground'>
+          Start with a public YouTube channel handle, channel ID, or full channel URL.
         </div>
       )}
     </div>

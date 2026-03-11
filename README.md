@@ -22,6 +22,16 @@ A dashboard application for managing influencers and channel analytics.
 bun install
 ```
 
+### Environment
+
+Add the following to `.env.local`:
+
+```bash
+YOUTUBE_API_KEY=your_youtube_data_api_v3_key
+```
+
+The key should have **YouTube Data API v3** enabled and should be used server-side only.
+
 ### Development
 
 Run both frontend and backend:
@@ -69,3 +79,12 @@ src/
   lib/
 convex/              # Backend functions and schema
 ```
+
+## YouTube Public Lookup
+
+The `Channel Lookup` page now uses the public YouTube Data API v3 for channel import.
+
+- supported inputs: `@handle`, channel IDs, and channel URLs
+- uses public metadata and public stats only
+- does not use YouTube Analytics or OAuth
+- does not expose public revenue metrics because the public API does not provide them

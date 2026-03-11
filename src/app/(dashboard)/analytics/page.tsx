@@ -271,7 +271,8 @@ export default function AnalyticsPage() {
               Audit Risk Assessment
             </CardTitle>
             <CardDescription>
-              Higher revenue with lower compliance scores indicate higher audit priority.
+              Lower compliance scores increase priority. Public YouTube imports may not include
+              revenue data.
             </CardDescription>
           </CardHeader>
           <CardContent>

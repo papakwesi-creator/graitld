@@ -95,7 +95,11 @@ export const getTopInfluencers = query({
     await requireAuth(ctx);
     const influencers = await ctx.db.query('influencers').collect();
     return influencers
-      .sort((a, b) => (b.estimatedAnnualRevenue ?? 0) - (a.estimatedAnnualRevenue ?? 0))
+      .sort((a, b) => {
+        const left = b.estimatedAnnualRevenue ?? b.totalViews ?? 0;
+        const right = a.estimatedAnnualRevenue ?? a.totalViews ?? 0;
+        return left - right;
+      })
       .slice(0, 10);
   },
 });
