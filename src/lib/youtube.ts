@@ -124,9 +124,6 @@ export function normalizeYoutubeLookup(input: string): NormalizedLookup | null {
     }
 
     const host = url.hostname.replace(/^www\./i, '').toLowerCase();
-    if (!host.endsWith('youtube.com') && host !== 'youtu.be') {
-      return null;
-    const host = url.hostname.replace(/^www\./i, '').toLowerCase();
     const isYouTubeHost =
       host === 'youtube.com' || host.endsWith('.youtube.com') || host === 'youtu.be';
     if (!isYouTubeHost) {
