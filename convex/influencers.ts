@@ -67,20 +67,16 @@ const influencerFields = {
 };
 
 function stripServerManagedInfluencerFields<T extends Record<string, unknown>>(value: T) {
-  const {
-    source: _source,
-    sourceLookupValue: _sourceLookupValue,
-    sourceResolvedAt: _sourceResolvedAt,
-    sourceRefreshError: _sourceRefreshError,
-    ...rest
-  } = value as T & {
-    source?: unknown;
-    sourceLookupValue?: unknown;
-    sourceResolvedAt?: unknown;
-    sourceRefreshError?: unknown;
-  };
+  const serverManagedKeys = new Set([
+    'source',
+    'sourceLookupValue',
+    'sourceResolvedAt',
+    'sourceRefreshError',
+  ]);
 
-  return rest;
+  return Object.fromEntries(
+    Object.entries(value).filter(([key]) => !serverManagedKeys.has(key)),
+  ) as Partial<T>;
 }
 
 export const getInfluencers = query({
