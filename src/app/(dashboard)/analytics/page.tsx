@@ -145,7 +145,9 @@ export default function AnalyticsPage() {
                     width={100}
                   />
                   <Tooltip
-                    formatter={(value: number | string | undefined) => Number(value ?? 0)}
+                    formatter={(value) =>
+                      Number(Array.isArray(value) ? (value[0] ?? 0) : (value ?? 0))
+                    }
                     contentStyle={{
                       backgroundColor: 'var(--popover)',
                       border: '1px solid var(--border)',

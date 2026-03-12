@@ -9,7 +9,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useMutation } from 'convex/react';
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { api } from '~convex/_generated/api';
 
 import { Badge } from '@/components/ui/badge';
@@ -17,9 +17,7 @@ import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const upsertYoutubeInfluencerRef = api.influencers.upsertYoutubeInfluencer as unknown as Parameters<
-  typeof useMutation
->[0];
+const upsertYoutubeInfluencerRef = api.influencers.upsertYoutubeInfluencer;
 
 type LookupResult = {
   name: string;
@@ -73,6 +71,7 @@ export default function ChannelLookupPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LookupResult | null>(null);
+  const [sourceLookupValue, setSourceLookupValue] = useState('');
   const [importMessage, setImportMessage] = useState<string | null>(null);
 
   const hasLookup = useMemo(() => Boolean(result || error), [result, error]);
@@ -85,6 +84,7 @@ export default function ChannelLookupPage() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setSourceLookupValue('');
     setImportMessage(null);
 
     try {
@@ -101,9 +101,11 @@ export default function ChannelLookupPage() {
       }
 
       setResult({ ...data });
+      setSourceLookupValue(trimmed);
     } catch (lookupError) {
       setError(lookupError instanceof Error ? lookupError.message : 'Lookup failed.');
       setResult(null);
+      setSourceLookupValue('');
     } finally {
       setIsLoading(false);
     }
@@ -120,6 +122,7 @@ export default function ChannelLookupPage() {
         name: result.name,
         handle: normalizeHandle(result.handle),
         channelId: result.channelId,
+        sourceLookupValue: sourceLookupValue,
         customUrl: result.customUrl,
         profileImageUrl: result.profileImageUrl,
         description: result.description,

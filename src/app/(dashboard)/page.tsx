@@ -347,14 +347,20 @@ export default function OverviewPage() {
                     </div>
                     <div className='text-right'>
                       <span className='block font-mono text-sm font-medium text-foreground'>
-                        {inf.estimatedAnnualRevenue
+                        {inf.estimatedAnnualRevenue !== undefined &&
+                        inf.estimatedAnnualRevenue !== null
                           ? formatCurrency(inf.estimatedAnnualRevenue)
-                          : inf.totalViews
+                          : inf.totalViews !== undefined && inf.totalViews !== null
                             ? `${formatCompactNumber(inf.totalViews)} views`
                             : '--'}
                       </span>
                       <span className='text-[10px] tracking-wide text-muted-foreground uppercase'>
-                        {inf.estimatedAnnualRevenue ? 'Est. Revenue' : 'Public Signal'}
+                        {inf.estimatedAnnualRevenue !== undefined &&
+                        inf.estimatedAnnualRevenue !== null
+                          ? 'Est. Revenue'
+                          : inf.totalViews !== undefined && inf.totalViews !== null
+                            ? 'Public Signal'
+                            : 'Public Signal'}
                       </span>
                     </div>
                   </div>
