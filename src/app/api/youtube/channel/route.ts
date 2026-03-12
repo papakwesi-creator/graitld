@@ -14,8 +14,7 @@ export async function GET(request: Request) {
     const result = await lookupPublicYouTubeChannel(query);
 
     if ('error' in result) {
-      const status =
-        result.error === 'Enter a YouTube handle, channel ID, or channel URL.' ? 400 : 404;
+      const status = result.code === 'invalid_input' ? 400 : 404;
       return NextResponse.json({ error: result.error }, { status });
     }
 

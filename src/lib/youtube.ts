@@ -220,17 +220,27 @@ async function searchChannelId(query: string) {
     maxResults: 5,
   });
 
-  const matches = (data.items ?? []).filter((item) => {
-    const channelId = item.id?.channelId;
-    if (!channelId) return false;
+  const items = (data.items ?? []).filter((item) => item.id?.channelId);
 
-    const title = item.snippet?.title?.trim().toLowerCase();
+  const customUrlMatches = items.filter((item) => {
     const customUrl = item.snippet?.customUrl?.trim().toLowerCase().replace(/^@/, '');
-
-    return title === normalizedQuery || customUrl === normalizedQuery;
+    return customUrl === normalizedQuery;
   });
 
-  return matches.length === 1 ? (matches[0]?.id?.channelId ?? null) : null;
+  if (customUrlMatches.length === 1) {
+    return customUrlMatches[0]?.id?.channelId ?? null;
+  }
+
+  const titleMatches = items.filter((item) => {
+    const title = item.snippet?.title?.trim().toLowerCase();
+    return title === normalizedQuery;
+  });
+
+  if (titleMatches.length === 1) {
+    return titleMatches[0]?.id?.channelId ?? null;
+  }
+
+  return null;
 }
 
 async function getRecentVideoIds(uploadsPlaylistId: string, maxResults = 10) {
@@ -300,7 +310,10 @@ function toPublicChannel(
 export async function lookupPublicYouTubeChannel(input: string) {
   const normalized = normalizeYoutubeLookup(input);
   if (!normalized) {
-    return { error: 'Enter a YouTube handle, channel ID, or channel URL.' as const };
+    return {
+      code: 'invalid_input' as const,
+      error: 'Enter a YouTube handle, channel ID, or channel URL.' as const,
+    };
   }
 
   let channel: YouTubeChannelItem | null = null;
@@ -331,7 +344,10 @@ export async function lookupPublicYouTubeChannel(input: string) {
   }
 
   if (!channel) {
-    return { error: 'No public YouTube channel matched that lookup.' as const };
+    return {
+      code: 'not_found' as const,
+      error: 'No public YouTube channel matched that lookup.' as const,
+    };
   }
 
   let avgEngagementRate: number | undefined;
