@@ -206,13 +206,41 @@ async function getChannelByUsername(username: string) {
 }
 
 async function searchChannelId(query: string) {
-  const data = await youtubeFetch<{ items?: Array<{ id?: { channelId?: string } }> }>('search', {
+  const normalizedQuery = query.trim().toLowerCase().replace(/^@/, '');
+
+  const data = await youtubeFetch<{
+    items?: Array<{
+      id?: { channelId?: string };
+      snippet?: { title?: string; customUrl?: string };
+    }>;
+  }>('search', {
     part: 'snippet',
     q: query,
     type: 'channel',
-    maxResults: 1,
+    maxResults: 5,
   });
-  return data.items?.[0]?.id?.channelId ?? null;
+
+  const items = (data.items ?? []).filter((item) => item.id?.channelId);
+
+  const customUrlMatches = items.filter((item) => {
+    const customUrl = item.snippet?.customUrl?.trim().toLowerCase().replace(/^@/, '');
+    return customUrl === normalizedQuery;
+  });
+
+  if (customUrlMatches.length === 1) {
+    return customUrlMatches[0]?.id?.channelId ?? null;
+  }
+
+  const titleMatches = items.filter((item) => {
+    const title = item.snippet?.title?.trim().toLowerCase();
+    return title === normalizedQuery;
+  });
+
+  if (titleMatches.length === 1) {
+    return titleMatches[0]?.id?.channelId ?? null;
+  }
+
+  return null;
 }
 
 async function getRecentVideoIds(uploadsPlaylistId: string, maxResults = 10) {
@@ -282,7 +310,10 @@ function toPublicChannel(
 export async function lookupPublicYouTubeChannel(input: string) {
   const normalized = normalizeYoutubeLookup(input);
   if (!normalized) {
-    return { error: 'Enter a YouTube handle, channel ID, or channel URL.' as const };
+    return {
+      code: 'invalid_input' as const,
+      error: 'Enter a YouTube handle, channel ID, or channel URL.' as const,
+    };
   }
 
   let channel: YouTubeChannelItem | null = null;
@@ -313,7 +344,10 @@ export async function lookupPublicYouTubeChannel(input: string) {
   }
 
   if (!channel) {
-    return { error: 'No public YouTube channel matched that lookup.' as const };
+    return {
+      code: 'not_found' as const,
+      error: 'No public YouTube channel matched that lookup.' as const,
+    };
   }
 
   let avgEngagementRate: number | undefined;

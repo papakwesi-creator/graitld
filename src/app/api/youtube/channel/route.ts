@@ -14,7 +14,8 @@ export async function GET(request: Request) {
     const result = await lookupPublicYouTubeChannel(query);
 
     if ('error' in result) {
-      return NextResponse.json({ error: result.error }, { status: 404 });
+      const status = result.code === 'invalid_input' ? 400 : 404;
+      return NextResponse.json({ error: result.error }, { status });
     }
 
     return NextResponse.json(result.data);
@@ -23,11 +24,9 @@ export async function GET(request: Request) {
     const status =
       message.includes('quota') || message.includes('Quota')
         ? 429
-        : message.includes('Missing q query parameter')
-          ? 400
-          : message.includes('YOUTUBE_API_KEY')
-            ? 500
-            : 502;
+        : message.includes('YOUTUBE_API_KEY')
+          ? 500
+          : 502;
 
     return NextResponse.json({ error: message }, { status });
   }

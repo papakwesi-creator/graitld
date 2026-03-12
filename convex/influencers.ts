@@ -66,6 +66,18 @@ const influencerFields = {
   notes: v.optional(v.string()),
 };
 
+function stripServerManagedInfluencerFields<T extends Record<string, unknown>>(value: T): T {
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      ([key]) =>
+        key !== 'source' &&
+        key !== 'sourceLookupValue' &&
+        key !== 'sourceResolvedAt' &&
+        key !== 'sourceRefreshError',
+    ),
+  ) as T;
+}
+
 export const getInfluencers = query({
   args: {
     platform: v.optional(platformValidator),
@@ -176,8 +188,32 @@ export const createInfluencer = mutation({
     await requireAuth(ctx);
 
     return await ctx.db.insert('influencers', {
-      ...args,
+      name: args.name,
+      platform: args.platform,
+      handle: args.handle,
+      channelId: args.channelId,
+      customUrl: args.customUrl,
+      profileImageUrl: args.profileImageUrl,
+      description: args.description,
+      email: args.email,
+      phone: args.phone,
+      subscribers: args.subscribers,
+      subscriberCountHidden: args.subscriberCountHidden,
+      totalViews: args.totalViews,
+      avgEngagementRate: args.avgEngagementRate,
+      totalVideos: args.totalVideos,
+      uploadsPlaylistId: args.uploadsPlaylistId,
+      topicCategories: args.topicCategories,
+      estimatedMonthlyRevenue: args.estimatedMonthlyRevenue,
+      estimatedAnnualRevenue: args.estimatedAnnualRevenue,
+      taxLiability: args.taxLiability,
+      taxIdNumber: args.taxIdNumber,
+      complianceScore: args.complianceScore,
       complianceStatus: args.complianceStatus ?? 'pending',
+      region: args.region,
+      country: args.country,
+      channelCreatedAt: args.channelCreatedAt,
+      notes: args.notes,
       source: 'manual',
       lastDataRefresh: Date.now(),
     });
@@ -195,7 +231,7 @@ export const updateInfluencer = mutation({
     await requireAuth(ctx);
 
     const { id, ...updates } = args;
-    const cleanUpdates = removeUndefined(updates);
+    const cleanUpdates = removeUndefined(stripServerManagedInfluencerFields(updates));
 
     await ctx.db.patch(id, cleanUpdates);
   },
@@ -239,6 +275,7 @@ export const upsertYoutubeInfluencer = mutation({
       source: 'youtube_api' as const,
       sourceLookupValue: args.sourceLookupValue,
       sourceResolvedAt: now,
+      sourceRefreshError: undefined,
       lastDataRefresh: now,
       complianceStatus,
     };
@@ -280,3 +317,4 @@ export const deleteInfluencer = mutation({
     await ctx.db.delete(args.id);
   },
 });
+

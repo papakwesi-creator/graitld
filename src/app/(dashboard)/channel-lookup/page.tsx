@@ -71,6 +71,7 @@ export default function ChannelLookupPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LookupResult | null>(null);
+  const [sourceLookupValue, setSourceLookupValue] = useState('');
   const [importMessage, setImportMessage] = useState<string | null>(null);
 
   const hasLookup = useMemo(() => Boolean(result || error), [result, error]);
@@ -83,6 +84,7 @@ export default function ChannelLookupPage() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setSourceLookupValue('');
     setImportMessage(null);
 
     try {
@@ -99,9 +101,11 @@ export default function ChannelLookupPage() {
       }
 
       setResult({ ...data });
+      setSourceLookupValue(trimmed);
     } catch (lookupError) {
       setError(lookupError instanceof Error ? lookupError.message : 'Lookup failed.');
       setResult(null);
+      setSourceLookupValue('');
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +122,7 @@ export default function ChannelLookupPage() {
         name: result.name,
         handle: normalizeHandle(result.handle),
         channelId: result.channelId,
-        sourceLookupValue: query.trim(),
+        sourceLookupValue: sourceLookupValue,
         customUrl: result.customUrl,
         profileImageUrl: result.profileImageUrl,
         description: result.description,
