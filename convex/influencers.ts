@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 
+import type { Id } from './_generated/dataModel';
 import type { MutationCtx } from './_generated/server';
 import { mutation, query } from './_generated/server';
 import { DEFAULT_TAX_RATE, loadChannelSummaries } from './channelData';
@@ -10,6 +11,20 @@ const complianceStatusValidator = v.union(
   v.literal('non-compliant'),
   v.literal('pending'),
   v.literal('under-review'),
+);
+
+const connectionStatusValidator = v.union(
+  v.literal('active'),
+  v.literal('expired'),
+  v.literal('revoked'),
+  v.literal('refresh_failed'),
+  v.literal('scope_insufficient'),
+);
+
+const analyticsSyncStatusValidator = v.union(
+  v.literal('success'),
+  v.literal('partial'),
+  v.literal('failed'),
 );
 
 const channelFields = {
@@ -76,6 +91,10 @@ function getBusinessChannelId(channelId: string | undefined, handle: string) {
 
 function getActorId(user: { userId?: string | null; _id: string }) {
   return user.userId ?? user._id;
+}
+
+function isConnectableBusinessChannelId(channelId: string) {
+  return !channelId.startsWith('manual:') && !channelId.startsWith('legacy:');
 }
 
 async function upsertManualFinancialSnapshot(
@@ -185,6 +204,104 @@ async function upsertTaxEstimateFromRevenue(
   }
 }
 
+async function upsertAnalyticsSyncSnapshot(
+  ctx: MutationCtx,
+  args: {
+    channelId: string;
+    connectionId: Id<'oauthConnections'>;
+    periodStart: number;
+    periodEnd: number;
+    estimatedRevenue?: number;
+    estimatedAdRevenue?: number;
+    estimatedRedRevenue?: number;
+    monetizedPlaybacks?: number;
+    cpm?: number;
+    views?: number;
+    watchTimeMinutes?: number;
+    likes?: number;
+    comments?: number;
+    shares?: number;
+    subscribersGained?: number;
+    subscribersLost?: number;
+    syncStatus: 'success' | 'partial' | 'failed';
+    syncError?: string;
+    calculatedBy: string;
+  },
+) {
+  const existingSyncs = await ctx.db
+    .query('analyticsSyncs')
+    .withIndex('by_channelId_period', (q) => q.eq('channelId', args.channelId).eq('periodStart', args.periodStart))
+    .collect();
+
+  const matchingSync = existingSyncs.find((entry) => entry.periodEnd === args.periodEnd);
+  const syncPayload = {
+    channelId: args.channelId,
+    connectionId: args.connectionId,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    estimatedRevenue: args.estimatedRevenue,
+    estimatedAdRevenue: args.estimatedAdRevenue,
+    estimatedRedRevenue: args.estimatedRedRevenue,
+    monetizedPlaybacks: args.monetizedPlaybacks,
+    cpm: args.cpm,
+    views: args.views,
+    watchTimeMinutes: args.watchTimeMinutes,
+    likes: args.likes,
+    comments: args.comments,
+    shares: args.shares,
+    subscribersGained: args.subscribersGained,
+    subscribersLost: args.subscribersLost,
+    syncedAt: Date.now(),
+    syncStatus: args.syncStatus,
+    syncError: args.syncError,
+    rawResponseHash: undefined,
+  };
+
+  const syncId = matchingSync
+    ? (await ctx.db.patch(matchingSync._id, syncPayload), matchingSync._id)
+    : await ctx.db.insert('analyticsSyncs', syncPayload);
+
+  if (args.estimatedRevenue !== undefined) {
+    const existingTaxEstimates = await ctx.db
+      .query('taxEstimates')
+      .withIndex('by_channelId_period', (q) => q.eq('channelId', args.channelId).eq('periodStart', args.periodStart))
+      .collect();
+
+    const analyticsEstimate = existingTaxEstimates.find(
+      (entry) =>
+        entry.periodEnd === args.periodEnd &&
+        entry.sourceType === 'analytics',
+    );
+
+    const taxPayload = {
+      channelId: args.channelId,
+      periodStart: args.periodStart,
+      periodEnd: args.periodEnd,
+      sourceType: 'analytics' as const,
+      manualFinancialId: undefined,
+      analyticsSyncId: syncId,
+      grossRevenue: args.estimatedRevenue,
+      allowableDeductions: undefined,
+      taxableIncome: args.estimatedRevenue,
+      taxRate: DEFAULT_TAX_RATE,
+      currency: 'GHS',
+      estimatedTax: Math.round(args.estimatedRevenue * DEFAULT_TAX_RATE),
+      calculatedAt: Date.now(),
+      calculatedBy: args.calculatedBy,
+      calculationVersion: 'wave-1',
+      notes: 'Derived from connected YouTube analytics',
+    };
+
+    if (analyticsEstimate) {
+      await ctx.db.patch(analyticsEstimate._id, taxPayload);
+    } else {
+      await ctx.db.insert('taxEstimates', taxPayload);
+    }
+  }
+
+  return syncId;
+}
+
 async function createOrUpdateManualChannel(
   ctx: MutationCtx,
   args: ChannelMutationArgs,
@@ -267,6 +384,29 @@ export const getInfluencers = query({
 });
 
 export const getChannels = getInfluencers;
+
+export const getChannelConnectionTarget = query({
+  args: {
+    channelId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireAuth(ctx);
+    const channels = await loadChannelSummaries(ctx.db);
+    const channel = channels.find((entry) => entry.channelId === args.channelId);
+
+    if (!channel) {
+      return null;
+    }
+
+    return {
+      channelId: channel.channelId,
+      name: channel.name,
+      analyticsStatus: channel.analyticsStatus,
+      hasConnectedAnalytics: channel.hasConnectedAnalytics,
+      connectable: isConnectableBusinessChannelId(channel.channelId),
+    };
+  },
+});
 
 export const getInfluencerStats = query({
   args: {},
@@ -477,6 +617,124 @@ export const upsertChannel = mutation({
 });
 
 export const upsertYoutubeInfluencer = upsertChannel;
+
+export const completeChannelAnalyticsConnection = mutation({
+  args: {
+    channelId: v.string(),
+    googleAccountId: v.optional(v.string()),
+    accessToken: v.string(),
+    refreshToken: v.optional(v.string()),
+    accessTokenExpiresAt: v.number(),
+    grantedScopes: v.array(v.string()),
+    status: connectionStatusValidator,
+    lastRefreshError: v.optional(v.string()),
+    analytics: v.optional(
+      v.object({
+        periodStart: v.number(),
+        periodEnd: v.number(),
+        estimatedRevenue: v.optional(v.number()),
+        estimatedAdRevenue: v.optional(v.number()),
+        estimatedRedRevenue: v.optional(v.number()),
+        monetizedPlaybacks: v.optional(v.number()),
+        cpm: v.optional(v.number()),
+        views: v.optional(v.number()),
+        watchTimeMinutes: v.optional(v.number()),
+        likes: v.optional(v.number()),
+        comments: v.optional(v.number()),
+        shares: v.optional(v.number()),
+        subscribersGained: v.optional(v.number()),
+        subscribersLost: v.optional(v.number()),
+        syncStatus: analyticsSyncStatusValidator,
+        syncError: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const user = await requireAuth(ctx);
+    const actorId = getActorId({ userId: user.userId, _id: String(user._id) });
+    const channels = await loadChannelSummaries(ctx.db);
+    const channel = channels.find((entry) => entry.channelId === args.channelId);
+
+    if (!channel) {
+      throw new Error('Channel not found');
+    }
+
+    if (!isConnectableBusinessChannelId(args.channelId)) {
+      throw new Error('Public channel data is required before analytics can be connected');
+    }
+
+    const existingConnections = await ctx.db
+      .query('oauthConnections')
+      .withIndex('by_channelId', (q) => q.eq('channelId', args.channelId))
+      .collect();
+
+    const latestConnection = existingConnections.sort(
+      (left, right) =>
+        (right.lastTokenRefresh ?? right.connectedAt) - (left.lastTokenRefresh ?? left.connectedAt),
+    )[0];
+
+    const now = Date.now();
+    const connectionPayload = {
+      channelId: args.channelId,
+      googleAccountId: args.googleAccountId ?? latestConnection?.googleAccountId,
+      accessToken: args.accessToken,
+      refreshToken: args.refreshToken ?? latestConnection?.refreshToken,
+      accessTokenExpiresAt: args.accessTokenExpiresAt,
+      grantedScopes: args.grantedScopes,
+      status: args.status,
+      connectedAt: latestConnection?.connectedAt ?? now,
+      lastTokenRefresh: now,
+      lastRefreshError: args.lastRefreshError,
+      disconnectedAt: undefined,
+    };
+
+    const connectionId = latestConnection
+      ? (await ctx.db.patch(latestConnection._id, connectionPayload), latestConnection._id)
+      : await ctx.db.insert('oauthConnections', connectionPayload);
+
+    if (args.analytics) {
+      await upsertAnalyticsSyncSnapshot(ctx, {
+        channelId: args.channelId,
+        connectionId,
+        periodStart: args.analytics.periodStart,
+        periodEnd: args.analytics.periodEnd,
+        estimatedRevenue: args.analytics.estimatedRevenue,
+        estimatedAdRevenue: args.analytics.estimatedAdRevenue,
+        estimatedRedRevenue: args.analytics.estimatedRedRevenue,
+        monetizedPlaybacks: args.analytics.monetizedPlaybacks,
+        cpm: args.analytics.cpm,
+        views: args.analytics.views,
+        watchTimeMinutes: args.analytics.watchTimeMinutes,
+        likes: args.analytics.likes,
+        comments: args.analytics.comments,
+        shares: args.analytics.shares,
+        subscribersGained: args.analytics.subscribersGained,
+        subscribersLost: args.analytics.subscribersLost,
+        syncStatus: args.analytics.syncStatus,
+        syncError: args.analytics.syncError,
+        calculatedBy: actorId,
+      });
+    }
+
+    await ctx.db.insert('auditLogs', {
+      userId: actorId,
+      userName: user.name ?? user.email ?? 'Officer',
+      action: 'channel_analytics_connected',
+      entityType: 'channel',
+      entityId: args.channelId,
+      details:
+        args.analytics?.syncStatus === 'success'
+          ? `Connected Google analytics for ${channel.name}`
+          : `Connected Google analytics for ${channel.name} with ${args.analytics?.syncStatus ?? 'no'} sync result`,
+      timestamp: now,
+    });
+
+    return {
+      connectionId,
+      synced: Boolean(args.analytics),
+    };
+  },
+});
 
 export const deleteChannel = mutation({
   args: {
