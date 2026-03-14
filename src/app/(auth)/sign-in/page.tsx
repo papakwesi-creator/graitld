@@ -64,7 +64,7 @@ export default function SignInPage() {
   return (
     <div className='flex min-h-screen'>
       {/* Left panel — GRA branding */}
-      <div className='relative hidden w-1/2 flex-col justify-between overflow-hidden bg-[oklch(0.18_0.03_250)] p-12 lg:flex'>
+      <div className='relative hidden w-1/2 flex-col justify-between overflow-hidden bg-primary p-12 lg:flex'>
         {/* Decorative geometric pattern */}
         <div className='absolute inset-0 opacity-[0.04]'>
           <svg width='100%' height='100%' xmlns='http://www.w3.org/2000/svg'>
@@ -224,7 +224,7 @@ export default function SignInPage() {
             <Button
               type='submit'
               disabled={loading}
-              className='h-10 w-full bg-[oklch(0.22_0.04_250)] text-white hover:bg-[oklch(0.28_0.04_250)]'
+              className='h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90'
             >
               {loading ? (
                 <span className='flex items-center justify-center gap-2'>
