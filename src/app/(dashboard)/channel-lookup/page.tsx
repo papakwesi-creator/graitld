@@ -16,8 +16,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatDate } from '@/lib/product';
 
-const upsertYoutubeInfluencerRef = api.influencers.upsertYoutubeInfluencer;
+const upsertChannelRef = api.influencers.upsertChannel;
 
 type LookupResult = {
   name: string;
@@ -50,21 +51,12 @@ function formatNumber(value?: number) {
   return value.toLocaleString();
 }
 
-function formatDate(timestamp?: number) {
-  if (!timestamp) return '--';
-  return new Date(timestamp).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 function normalizeHandle(handle: string) {
   return handle.startsWith('@') ? handle.slice(1) : handle;
 }
 
 export default function ChannelLookupPage() {
-  const upsertYoutubeInfluencer = useMutation(upsertYoutubeInfluencerRef);
+  const upsertChannel = useMutation(upsertChannelRef);
 
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -118,7 +110,7 @@ export default function ChannelLookupPage() {
     setImportMessage(null);
 
     try {
-      await upsertYoutubeInfluencer({
+      await upsertChannel({
         name: result.name,
         handle: normalizeHandle(result.handle),
         channelId: result.channelId,
@@ -138,7 +130,7 @@ export default function ChannelLookupPage() {
       });
 
       setImportMessage(
-        'Channel imported successfully. Existing records are updated by channel ID.',
+        'Channel imported successfully. Public channel records are updated by channel ID.',
       );
     } catch (importError) {
       setError(importError instanceof Error ? importError.message : 'Import failed.');
@@ -155,7 +147,7 @@ export default function ChannelLookupPage() {
           <h2 className='font-heading text-base font-semibold'>Channel Lookup</h2>
           <p className='mt-1 text-sm text-muted-foreground'>
             Look up public YouTube channel data by handle, channel ID, or URL, then import it into
-            the registry.
+            the channel registry.
           </p>
           <p className='mt-2 text-xs text-muted-foreground'>
             Revenue and monetization metrics are not exposed by the public YouTube Data API.
@@ -296,10 +288,11 @@ export default function ChannelLookupPage() {
             </div>
             <div className='rounded-lg border border-border/60 bg-background p-4'>
               <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
-                Revenue Data
+                Revenue Access
               </p>
               <p className='mt-2 text-sm text-muted-foreground'>
-                Not available from public YouTube Data API lookup.
+                Not available from public YouTube Data API lookup. Connected analytics requires
+                channel owner authorization.
               </p>
             </div>
           </div>

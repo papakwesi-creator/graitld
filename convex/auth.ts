@@ -23,6 +23,26 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
       enabled: true,
       requireEmailVerification: false,
     },
+    socialProviders:
+      process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+        ? {
+            google: {
+              clientId: process.env.GOOGLE_CLIENT_ID,
+              clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+              redirectURI: process.env.GOOGLE_REDIRECT_URI,
+              accessType: 'offline',
+              prompt: 'select_account consent',
+              scope: [
+                'openid',
+                'email',
+                'profile',
+                'https://www.googleapis.com/auth/youtube.readonly',
+                'https://www.googleapis.com/auth/yt-analytics.readonly',
+                'https://www.googleapis.com/auth/yt-analytics-monetary.readonly',
+              ],
+            },
+          }
+        : undefined,
     plugins: [
       // The Convex plugin is required for Convex compatibility
       convex({ authConfig }),

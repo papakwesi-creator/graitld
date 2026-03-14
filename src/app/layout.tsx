@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Manrope, DM_Sans, JetBrains_Mono } from 'next/font/google';
 
 import { ThemeProvider } from '@/components/theme-provider';
+import { PRODUCT_DESCRIPTION, PRODUCT_NAME } from '@/lib/product';
 
 import { ConvexClientProvider } from './ConvexClientProvider';
 
@@ -26,9 +27,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'GRA Influencer Tax Dashboard',
-  description:
-    'Tax estimation and management system for the Ghana Revenue Authority — assess, track, and manage influencer tax liabilities.',
+  title: PRODUCT_NAME,
+  description: PRODUCT_DESCRIPTION,
 };
 
 /**

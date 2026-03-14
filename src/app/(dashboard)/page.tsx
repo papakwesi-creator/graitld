@@ -5,9 +5,6 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -18,34 +15,8 @@ import { api } from '~convex/_generated/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatCompactNumber, formatCurrency, formatRevenueSource } from '@/lib/product';
 
-/**
- * Format a numeric amount (in Ghanaian cedi) into a compact, human-friendly currency string.
- *
- * @param value - The amount in Ghanaian cedi to format
- * @returns A string prefixed with `GH₵`; values >= 1,000,000 use `X.XM`, values >= 1,000 use `X.XK`, otherwise the locale-formatted whole amount
- */
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `GH\u20B5${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `GH\u20B5${(value / 1_000).toFixed(1)}K`;
-  return `GH\u20B5${value.toLocaleString()}`;
-}
-
-function formatCompactNumber(value: number): string {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toLocaleString();
-}
-
-/**
- * Render a metric card with a label, a prominent value, an optional subtitle, and a decorative gradient accent.
- *
- * @param label - Short uppercase label displayed above the value
- * @param value - Primary metric displayed prominently (string or number)
- * @param subtitle - Optional secondary text shown beneath the value
- * @param accentClass - Optional CSS class applied to the value for emphasis (defaults to foreground color)
- * @returns A React element representing the metric card
- */
 function MetricCard({
   label,
   value,
@@ -70,24 +41,19 @@ function MetricCard({
             {value}
           </p>
         </div>
-        {subtitle && <p className='mt-1 text-xs font-medium text-muted-foreground'>{subtitle}</p>}
+        {subtitle ? <p className='mt-1 text-xs font-medium text-muted-foreground'>{subtitle}</p> : null}
       </CardContent>
       <div className='absolute -top-6 -right-6 h-24 w-24 rounded-full bg-linear-to-br from-white/5 to-white/0 blur-2xl dark:from-white/10' />
     </Card>
   );
 }
 
-/**
- * Render skeleton placeholders that mimic the dashboard layout while data is loading.
- *
- * @returns A React element containing placeholder skeleton cards arranged to match the dashboard's grid and chart areas.
- */
 function DashboardSkeleton() {
   return (
     <div className='space-y-8 p-1'>
       <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className='h-32 rounded-2xl' />
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className='h-32 rounded-2xl' />
         ))}
       </div>
       <div className='grid gap-6 lg:grid-cols-3'>
@@ -98,18 +64,10 @@ function DashboardSkeleton() {
   );
 }
 
-/**
- * Renders the Overview dashboard for influencer analytics, including metric cards, revenue and tax charts, platform distribution, top influencers, and recent activity.
- *
- * Fetches required data via Convex queries and displays a loading skeleton until summary stats are available.
- *
- * @returns A JSX element representing the overview analytics dashboard.
- */
 export default function OverviewPage() {
   const stats = useQuery(api.influencers.getInfluencerStats);
   const revenueData = useQuery(api.analytics.getRevenueByMonth);
-  const platformData = useQuery(api.analytics.getPlatformDistribution);
-  const topInfluencers = useQuery(api.analytics.getTopInfluencers);
+  const topChannels = useQuery(api.analytics.getTopInfluencers);
   const recentLogs = useQuery(api.auditLogs.getRecentLogs, { limit: 5 });
 
   if (stats === undefined) {
@@ -118,53 +76,44 @@ export default function OverviewPage() {
 
   return (
     <div className='stagger-children animate-page-enter mx-auto w-full max-w-400 space-y-8 p-1'>
-      {/* Metric cards */}
       <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
         <MetricCard
-          label='Total Influencers'
-          value={stats.totalInfluencers}
-          subtitle={`${stats.youtubeCount} YouTube, ${stats.tiktokCount} TikTok`}
+          label='Tracked Channels'
+          value={stats.totalChannels}
+          subtitle={`${stats.publicOnlyChannels} public-only records, ${stats.connectedAnalyticsChannels} with connected analytics`}
         />
         <MetricCard
-          label='Est. Tax Revenue'
-          value={formatCurrency(stats.totalEstimatedTax)}
-          subtitle='Annual projection based on current data'
+          label='Estimated Tax Output'
+          value={formatCurrency(stats.totalEstimatedTax, { compact: true })}
+          subtitle='Derived separately from public metadata and source inputs'
           accentClass='text-accent'
         />
         <MetricCard
-          label='Compliance Rate'
-          value={`${stats.complianceRate}%`}
-          subtitle={`${stats.totalInfluencers - stats.pendingAssessments} assessed / ${stats.totalInfluencers} total`}
-          accentClass={
-            stats.complianceRate >= 70
-              ? 'text-success'
-              : stats.complianceRate >= 40
-                ? 'text-warning'
-                : 'text-destructive'
-          }
+          label='Manual Input Coverage'
+          value={stats.manualInputChannels}
+          subtitle='Channels with manual financial values recorded'
+          accentClass='text-success'
         />
         <MetricCard
-          label='Pending Reviews'
-          value={stats.pendingAssessments}
-          subtitle='Awaiting tax assessment'
+          label='Action Required'
+          value={stats.actionRequiredChannels}
+          subtitle='Reconnect, refresh, or provenance review needed'
           accentClass='text-gold'
         />
       </div>
 
-      {/* Charts row */}
       <div className='grid gap-6 lg:grid-cols-3'>
-        {/* Revenue trend */}
         <Card className='glass-panel rounded-2xl border-0 p-0 lg:col-span-2'>
           <CardHeader className='flex-row items-center justify-between px-6 pt-6'>
             <CardTitle className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
-              Revenue &amp; Tax Trend
+              Revenue Inputs &amp; Tax Estimates
             </CardTitle>
             <div className='flex gap-2'>
               <span className='flex items-center gap-1.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase'>
-                <span className='h-2 w-2 rounded-full bg-[oklch(0.6_0.18_250)]'></span> Revenue
+                <span className='h-2 w-2 rounded-full bg-[oklch(0.6_0.18_250)]' /> Revenue inputs
               </span>
               <span className='flex items-center gap-1.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase'>
-                <span className='h-2 w-2 rounded-full bg-[oklch(0.65_0.18_150)]'></span> Tax
+                <span className='h-2 w-2 rounded-full bg-[oklch(0.65_0.18_150)]' /> Tax estimates
               </span>
             </div>
           </CardHeader>
@@ -201,7 +150,7 @@ export default function OverviewPage() {
                       tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
                       axisLine={false}
                       tickLine={false}
-                      tickFormatter={(v) => formatCurrency(v)}
+                      tickFormatter={(value) => formatCurrency(value, { compact: true })}
                       dx={-10}
                     />
                     <Tooltip
@@ -218,7 +167,7 @@ export default function OverviewPage() {
                     <Area
                       type='monotone'
                       dataKey='revenue'
-                      name='Est. Revenue'
+                      name='Revenue input'
                       stroke='var(--chart-1)'
                       strokeWidth={3}
                       fill='url(#gradRevenue)'
@@ -227,7 +176,7 @@ export default function OverviewPage() {
                     <Area
                       type='monotone'
                       dataKey='tax'
-                      name='Est. Tax'
+                      name='Tax estimate'
                       stroke='var(--chart-2)'
                       strokeWidth={3}
                       fill='url(#gradTax)'
@@ -238,88 +187,49 @@ export default function OverviewPage() {
               </div>
             ) : (
               <div className='flex h-64 items-center justify-center text-sm text-muted-foreground'>
-                No data yet. Add influencers to see trends.
+                No source-aware financial history yet. Add manual inputs or calculate estimates to
+                see trends.
               </div>
             )}
           </CardContent>
         </Card>
-        {/* Platform distribution */}
+
         <Card className='glass-panel rounded-2xl border-0 p-0'>
           <CardHeader className='px-6 pt-6'>
             <CardTitle className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
-              Platform Split
+              Product Tracks
             </CardTitle>
           </CardHeader>
           <CardContent className='px-6 pb-6'>
-            {platformData && (platformData[0].value > 0 || platformData[1].value > 0) ? (
-              <div className='flex h-75 flex-col items-center justify-center'>
-                <ResponsiveContainer width='100%' height={220}>
-                  <PieChart>
-                    <Pie
-                      data={platformData}
-                      cx='50%'
-                      cy='50%'
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={6}
-                      dataKey='value'
-                      strokeWidth={0}
-                      cornerRadius={6}
-                    >
-                      {platformData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={index === 0 ? 'var(--chart-4)' : 'var(--chart-5)'}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--popover)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                      }}
-                      itemStyle={{ color: 'var(--foreground)' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className='mt-4 grid w-full grid-cols-2 gap-4 px-4'>
-                  {platformData.map((p, i) => (
-                    <div
-                      key={p.name}
-                      className='flex flex-col items-center rounded-lg bg-secondary/50 p-2'
-                    >
-                      <span className='text-xs font-medium text-muted-foreground uppercase'>
-                        {p.name}
-                      </span>
-                      <div className='mt-1 flex items-center gap-2'>
-                        <span
-                          className='h-2 w-2 rounded-full'
-                          style={{ backgroundColor: i === 0 ? 'var(--chart-4)' : 'var(--chart-5)' }}
-                        />
-                        <span className='text-lg font-bold'>{p.value}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <div className='space-y-4'>
+              <div className='rounded-2xl border border-border/60 bg-background/70 p-4'>
+                <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
+                  Public YouTube lookup
+                </p>
+                <p className='mt-2 text-3xl font-bold'>{stats.publicOnlyChannels}</p>
+                <p className='mt-2 text-sm text-muted-foreground'>
+                  Public metadata imports without revenue access.
+                </p>
               </div>
-            ) : (
-              <div className='flex h-48 items-center justify-center text-sm text-muted-foreground'>
-                No influencers yet.
+              <div className='rounded-2xl border border-border/60 bg-background/70 p-4'>
+                <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
+                  Connected analytics
+                </p>
+                <p className='mt-2 text-3xl font-bold'>{stats.connectedAnalyticsChannels}</p>
+                <p className='mt-2 text-sm text-muted-foreground'>
+                  Owner-authorized channels with stronger analytics inputs.
+                </p>
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Bottom row: Top influencers & Activity */}
       <div className='grid gap-6 lg:grid-cols-2'>
-        {/* Top influencers */}
         <Card className='glass-panel rounded-2xl border-0 p-0'>
           <CardHeader className='flex-row items-center justify-between px-6 pt-6'>
             <CardTitle className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
-              Top Influencers
+              Priority Channels
             </CardTitle>
             <Button variant='link' className='h-auto p-0 text-xs font-medium text-accent'>
               View All
@@ -327,40 +237,34 @@ export default function OverviewPage() {
           </CardHeader>
 
           <CardContent className='px-6 pb-6'>
-            {topInfluencers && topInfluencers.length > 0 ? (
+            {topChannels && topChannels.length > 0 ? (
               <div className='space-y-4'>
-                {topInfluencers.slice(0, 5).map((inf, i) => (
+                {topChannels.slice(0, 5).map((channel, index) => (
                   <div
-                    key={inf._id}
+                    key={channel._id}
                     className='group flex items-center justify-between rounded-xl border border-transparent bg-secondary/30 p-3 transition-all hover:border-border hover:bg-secondary/60'
                   >
                     <div className='flex items-center gap-4'>
                       <span className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background font-mono text-xs font-bold text-muted-foreground shadow-sm transition-transform group-hover:scale-110 group-hover:text-foreground'>
-                        {i + 1}
+                        {index + 1}
                       </span>
                       <div>
-                        <p className='font-heading text-sm font-semibold'>{inf.name}</p>
-                        <p className='text-xs text-muted-foreground'>
-                          @{inf.handle} &middot; <span className='capitalize'>{inf.platform}</span>
-                        </p>
+                        <p className='font-heading text-sm font-semibold'>{channel.name}</p>
+                        <p className='text-xs text-muted-foreground'>@{channel.handle}</p>
                       </div>
                     </div>
                     <div className='text-right'>
                       <span className='block font-mono text-sm font-medium text-foreground'>
-                        {inf.estimatedAnnualRevenue !== undefined &&
-                        inf.estimatedAnnualRevenue !== null
-                          ? formatCurrency(inf.estimatedAnnualRevenue)
-                          : inf.totalViews !== undefined && inf.totalViews !== null
-                            ? `${formatCompactNumber(inf.totalViews)} views`
+                        {channel.estimatedAnnualRevenue !== undefined
+                          ? formatCurrency(channel.estimatedAnnualRevenue, { compact: true })
+                          : channel.totalViews !== undefined
+                            ? `${formatCompactNumber(channel.totalViews)} views`
                             : '--'}
                       </span>
                       <span className='text-[10px] tracking-wide text-muted-foreground uppercase'>
-                        {inf.estimatedAnnualRevenue !== undefined &&
-                        inf.estimatedAnnualRevenue !== null
-                          ? 'Est. Revenue'
-                          : inf.totalViews !== undefined && inf.totalViews !== null
-                            ? 'Public Signal'
-                            : 'Public Signal'}
+                        {channel.estimatedAnnualRevenue !== undefined
+                          ? formatRevenueSource(channel.revenueSource)
+                          : 'Public signal'}
                       </span>
                     </div>
                   </div>
@@ -368,13 +272,12 @@ export default function OverviewPage() {
               </div>
             ) : (
               <p className='py-12 text-center text-sm text-muted-foreground'>
-                No influencers added yet.
+                No channels added yet.
               </p>
             )}
           </CardContent>
         </Card>
 
-        {/* Recent activity */}
         <Card className='glass-panel rounded-2xl border-0 p-0'>
           <CardHeader className='flex-row items-center justify-between px-6 pt-6'>
             <CardTitle className='font-heading text-sm font-bold tracking-widest text-muted-foreground uppercase'>
@@ -387,7 +290,6 @@ export default function OverviewPage() {
           <CardContent className='px-6 pb-6'>
             {recentLogs && recentLogs.length > 0 ? (
               <div className='relative space-y-6 pl-2'>
-                {/* Timeline line */}
                 <div className='absolute top-2 bottom-4 left-2.75 w-px bg-border/50' />
 
                 {recentLogs.map((log) => (
@@ -408,9 +310,9 @@ export default function OverviewPage() {
                           })}
                         </span>
                       </div>
-                      {log.details && (
+                      {log.details ? (
                         <p className='mt-1 text-xs text-muted-foreground'>{log.details}</p>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 ))}

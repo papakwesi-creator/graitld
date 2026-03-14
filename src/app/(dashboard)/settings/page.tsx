@@ -6,7 +6,10 @@ import { useQuery } from 'convex/react';
 import { api } from '~convex/_generated/api';
 
 import Image from 'next/image';
+import { authClient } from '@/lib/auth-client';
 import { useTheme } from 'next-themes';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -21,11 +24,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const recentLogs = useQuery(api.auditLogs.getRecentLogs, { limit: 15 });
+  const [connectingGoogle, setConnectingGoogle] = useState(false);
 
   const tabs = [
     { id: 'appearance' as const, label: 'Appearance', icon: Sun01Icon },
+    { id: 'connections' as const, label: 'Connections', icon: Settings01Icon },
     { id: 'activity' as const, label: 'Activity Log', icon: Clock01Icon },
   ];
+
+  const handleGoogleConnect = async () => {
+    setConnectingGoogle(true);
+    try {
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/settings',
+      });
+    } catch (error) {
+      console.error('Google OAuth start failed:', error);
+    } finally {
+      setConnectingGoogle(false);
+    }
+  };
 
   return (
     <Tabs defaultValue='appearance' className='space-y-6'>
@@ -41,10 +60,60 @@ export default function SettingsPage() {
       <TabsContent value='appearance'>
         <AppearanceSection theme={theme} setTheme={setTheme} />
       </TabsContent>
+      <TabsContent value='connections'>
+        <ConnectionsSection
+          connectingGoogle={connectingGoogle}
+          onConnectGoogle={handleGoogleConnect}
+        />
+      </TabsContent>
       <TabsContent value='activity'>
         <ActivitySection logs={recentLogs} />
       </TabsContent>
     </Tabs>
+  );
+}
+
+function ConnectionsSection({
+  connectingGoogle,
+  onConnectGoogle,
+}: {
+  connectingGoogle: boolean;
+  onConnectGoogle: () => Promise<void>;
+}) {
+  return (
+    <div className='rounded-xl border border-border/60 bg-card p-6'>
+      <h2 className='font-heading text-base font-semibold'>Connected Analytics</h2>
+      <p className='mt-1 text-sm text-muted-foreground'>
+        Google OAuth is optional and only used when a channel owner authorizes private analytics
+        access. Public YouTube lookup remains separate.
+      </p>
+
+      <div className='mt-6 grid gap-4 md:grid-cols-[1.4fr_1fr]'>
+        <div className='rounded-xl border border-border/60 bg-background/60 p-4'>
+          <p className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
+            What connection enables
+          </p>
+          <div className='mt-3 space-y-2 text-sm text-muted-foreground'>
+            <p>Channel-owner authorization only</p>
+            <p>Private YouTube Analytics access for approved scopes</p>
+            <p>Stronger revenue inputs for internal tax estimation</p>
+            <p>Reconnect and token expiry handling on the server side</p>
+          </div>
+        </div>
+
+        <div className='rounded-xl border border-border/60 bg-background/60 p-4'>
+          <p className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
+            Connect Google
+          </p>
+          <p className='mt-3 text-sm text-muted-foreground'>
+            Use the minimum required Google scopes for channel identity and analytics read access.
+          </p>
+          <Button onClick={onConnectGoogle} disabled={connectingGoogle} className='mt-4 w-full'>
+            {connectingGoogle ? 'Redirecting...' : 'Connect YouTube'}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -241,7 +310,7 @@ export function AboutSection() {
             className='shrink-0 rounded-lg'
           />
           <div>
-            <h2 className='font-heading text-base font-semibold'>GRA Influencer Tax Dashboard</h2>
+            <h2 className='font-heading text-base font-semibold'>GRA YouTube Tax Dashboard</h2>
             <p className='text-sm text-muted-foreground'>Version 1.0.0 — Final Year Project</p>
           </div>
         </div>
@@ -251,7 +320,7 @@ export function AboutSection() {
         <div className='mt-5 space-y-4'>
           <div className='grid gap-4 sm:grid-cols-2'>
             <InfoRow label='Organization' value='Ghana Revenue Authority' />
-            <InfoRow label='Division' value='Influencer Tax Division' />
+            <InfoRow label='Division' value='YouTube Creator Tax Operations' />
             <InfoRow label='Platform' value='Next.js + Convex' />
             <InfoRow label='License' value='Internal Use Only' />
           </div>
@@ -273,10 +342,10 @@ export function AboutSection() {
       <div className='rounded-xl border border-border/60 bg-card p-6'>
         <h3 className='text-sm font-semibold'>Purpose</h3>
         <p className='mt-2 text-sm leading-relaxed text-muted-foreground'>
-          This dashboard enables Ghana Revenue Authority officers to assess, track, and manage tax
-          liabilities for social media influencers operating within Ghana. It integrates channel
-          metrics from platforms like YouTube and TikTok to estimate taxable income and ensure
-          compliance with Ghanaian tax regulations.
+          This dashboard helps Ghana Revenue Authority officers separate public YouTube channel
+          data, optional owner-authorized analytics, manual financial inputs, and derived tax
+          estimates. Public lookup stays revenue-free, while connected analytics remains optional
+          and permission-based.
         </p>
       </div>
     </div>
