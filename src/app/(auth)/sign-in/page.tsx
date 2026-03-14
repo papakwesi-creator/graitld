@@ -103,7 +103,7 @@ export default function SignInPage() {
             />
             <div>
               <h2 className='font-heading text-xl font-bold text-white'>Ghana Revenue Authority</h2>
-              <p className='text-sm text-white/50'>Influencer Tax Liability Dashboard</p>
+              <p className='text-sm text-white/50'>YouTube creator tax dashboard</p>
             </div>
           </div>
         </div>
@@ -116,18 +116,18 @@ export default function SignInPage() {
           </blockquote>
           <div className='flex gap-8 text-white/40'>
             <div>
-              <p className='font-heading text-3xl font-bold text-[#D4A843]'>GH&#8373;</p>
-              <p className='mt-1 text-xs tracking-wider uppercase'>Revenue Tracking</p>
+              <p className='font-heading text-3xl font-bold text-[#D4A843]'>2</p>
+              <p className='mt-1 text-xs tracking-wider uppercase'>Product Tracks</p>
             </div>
             <div className='h-12 w-px bg-white/10' />
             <div>
-              <p className='font-heading text-3xl font-bold text-[#006B3F]'>2</p>
-              <p className='mt-1 text-xs tracking-wider uppercase'>Platforms Monitored</p>
+              <p className='font-heading text-3xl font-bold text-[#006B3F]'>24/7</p>
+              <p className='mt-1 text-xs tracking-wider uppercase'>Compliance Monitoring</p>
             </div>
             <div className='h-12 w-px bg-white/10' />
             <div>
-              <p className='font-heading text-3xl font-bold text-white/70'>16</p>
-              <p className='mt-1 text-xs tracking-wider uppercase'>Regions Covered</p>
+              <p className='font-heading text-3xl font-bold text-white/70'>1</p>
+              <p className='mt-1 text-xs tracking-wider uppercase'>YouTube Focus</p>
             </div>
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function SignInPage() {
           {/* Mobile logo */}
           <div className='flex flex-col items-start gap-3 lg:hidden'>
             <Image alt='GRA logo' src='/logo.png' width={80} height={60} className='rounded-lg' />
-            <span className='font-heading text-sm font-semibold'>GRA Tax Dashboard</span>
+            <span className='font-heading text-sm font-semibold'>GRA YouTube Tax Dashboard</span>
           </div>
 
           <div>
@@ -152,7 +152,7 @@ export default function SignInPage() {
             </h1>
             <p className='mt-2 text-sm text-muted-foreground'>
               {mode === 'signIn'
-                ? 'Enter your credentials to access the dashboard.'
+                ? 'Enter your credentials to manage public imports, connected analytics, and tax estimates.'
                 : 'Set up your officer account to get started.'}
             </p>
           </div>

@@ -24,7 +24,7 @@ import {
 
 const pages = [
   { title: 'Overview', href: '/', icon: DashboardSquare02Icon },
-  { title: 'Influencers', href: '/influencers', icon: UserGroupIcon },
+  { title: 'Channels', href: '/influencers', icon: UserGroupIcon },
   { title: 'Analytics', href: '/analytics', icon: Analytics01Icon },
   { title: 'Reports', href: '/reports', icon: ChartRadarIcon },
   { title: 'Channel Lookup', href: '/channel-lookup', icon: Search02Icon },

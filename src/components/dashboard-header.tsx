@@ -18,20 +18,20 @@ const pageTitles: Record<string, { title: string; description: string }> = {
     description: 'Key metrics and performance summary',
   },
   '/influencers': {
-    title: 'Influencers',
-    description: 'Manage influencer profiles and tax records',
+    title: 'Channels',
+    description: 'Manage public imports, manual inputs, and source status',
   },
   '/analytics': {
     title: 'Analytics',
-    description: 'Tax gap analysis and compliance insights',
+    description: 'Connected analytics, compliance insights, and source health',
   },
   '/reports': {
     title: 'Reports',
-    description: 'Generate and manage tax reports',
+    description: 'Generate source-aware oversight and tax reports',
   },
   '/channel-lookup': {
     title: 'Channel Lookup',
-    description: 'Search and import channel data',
+    description: 'Search and import public YouTube channel data',
   },
   '/settings': {
     title: 'Settings',
