@@ -3,10 +3,10 @@
 import { Add01Icon, Search01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useMutation, useQuery } from 'convex/react';
-import { useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import { api } from '~convex/_generated/api';
-import type { Id } from '~convex/_generated/dataModel';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,59 +22,30 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-// import { isAuthenticated } from '@/lib/auth-server';
+import {
+  currencyConfig,
+  formatAnalyticsStatus,
+  formatCurrency,
+  formatPublicStatus,
+  formatRevenueSource,
+  titleCaseLabel,
+} from '@/lib/product';
 
-const PLATFORMS = ['youtube', 'tiktok'] as const;
 const COMPLIANCE_STATUSES = ['compliant', 'non-compliant', 'pending', 'under-review'] as const;
-const REGIONS = [
-  'Greater Accra',
-  'Ashanti',
-  'Western',
-  'Eastern',
-  'Central',
-  'Northern',
-  'Volta',
-  'Upper East',
-  'Upper West',
-  'Bono',
-  'Bono East',
-  'Ahafo',
-  'Western North',
-  'Oti',
-  'North East',
-  'Savannah',
-] as const;
 
-/**
- * Format a numeric amount as a Ghanaian cedi currency string.
- *
- * @param value - The amount in Ghanaian cedi to format
- * @returns The amount prefixed with `GH₵` and formatted with locale-specific thousands separators
- */
-function formatCurrency(value: number): string {
-  return `GH\u20B5${value.toLocaleString()}`;
-}
-
-/**
- * Renders a compact badge for an influencer's compliance status.
- *
- * The displayed label replaces any hyphen in the status with a space and is capitalized by the UI.
- *
- * @param status - Compliance status; commonly one of: `compliant`, `non-compliant`, `pending`, `under-review`
- * @returns A styled span element showing the status label; unknown statuses render with a muted style
- */
 function StatusBadge({ status }: { status: string }) {
   const classes: Record<string, string> = {
-    'compliant': 'status-compliant',
+    compliant: 'status-compliant',
     'non-compliant': 'status-non-compliant',
-    'pending': 'status-pending',
+    pending: 'status-pending',
     'under-review': 'status-under-review',
   };
+
   return (
     <span
       className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize ${classes[status] ?? 'bg-muted text-muted-foreground'}`}
@@ -84,55 +55,71 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function PlatformBadge({ platform }: { platform: string }) {
+function SourceBadge({ label, variant = 'outline' }: { label: string; variant?: 'outline' | 'secondary' }) {
   return (
-    <Badge
-      className={`text-[10px] font-semibold uppercase ${
-        platform === 'youtube'
-          ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400'
-          : 'border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-400'
-      }`}
-    >
-      {platform}
+    <Badge variant={variant} className='text-[10px] tracking-wide uppercase'>
+      {label}
     </Badge>
   );
 }
 
-/**
- * Renders the Influencers management page with listing, client-side filtering, and an add-influencer UI.
- *
- * The component fetches influencers, allows text/platform/status filtering, and provides controls to create
- * and remove influencers via mutations; it also includes a sheet-driven form for adding new influencers.
- *
- * @returns The React element for the Influencers page.
- */
 export default function InfluencersPage() {
-  // const isAuthenticated = isAuthenticated();
-  const influencers = useQuery(api.influencers.getInfluencers, {});
-  const createInfluencer = useMutation(api.influencers.createInfluencer);
-  const deleteInfluencer = useMutation(api.influencers.deleteInfluencer);
+  const channels = useQuery(api.influencers.getChannels, {});
+  const createChannel = useMutation(api.influencers.createChannel);
+  const deleteChannel = useMutation(api.influencers.deleteChannel);
+  const searchParams = useSearchParams();
 
   const [search, setSearch] = useState('');
-  const [filterPlatform, setFilterPlatform] = useState<(typeof PLATFORMS)[number] | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<(typeof COMPLIANCE_STATUSES)[number] | 'all'>(
     'all',
   );
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-
-  // Form state
   const [form, setForm] = useState({
     name: '',
-    platform: 'youtube' as 'youtube' | 'tiktok',
     handle: '',
     email: '',
-    region: '' as (typeof REGIONS)[number] | '',
     estimatedMonthlyRevenue: '',
     estimatedAnnualRevenue: '',
     taxIdNumber: '',
+    notes: '',
   });
 
-  if (influencers === undefined) {
+  const connectSuccess = searchParams.get('connectSuccess');
+  const connectError = searchParams.get('connectError');
+  const connectedChannelId = searchParams.get('channelId');
+
+  const connectNotice = useMemo(() => {
+    if (connectSuccess === '1') {
+      return {
+        tone: 'success' as const,
+        message:
+          connectedChannelId
+            ? `Connected YouTube analytics for ${connectedChannelId}.`
+            : 'Connected YouTube analytics successfully.',
+      };
+    }
+
+    if (connectError) {
+      const messages: Record<string, string> = {
+        missing_oauth_parameters: 'Google OAuth returned without the required parameters.',
+        session_mismatch: 'The Google callback did not match the signed-in officer session.',
+        channel_not_connectable: 'Import public YouTube data for that channel before connecting analytics.',
+        google_account_does_not_manage_channel:
+          'That Google account does not appear to manage the selected YouTube channel.',
+        access_denied: 'Google access was denied before the connection completed.',
+      };
+
+      return {
+        tone: 'error' as const,
+        message: messages[connectError] ?? connectError,
+      };
+    }
+
+    return null;
+  }, [connectError, connectSuccess, connectedChannelId]);
+
+  if (channels === undefined) {
     return (
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
@@ -140,67 +127,67 @@ export default function InfluencersPage() {
           <Skeleton className='h-10 w-36' />
         </div>
         <Skeleton className='h-12 w-full' />
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className='h-16 w-full' />
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Skeleton key={index} className='h-24 w-full' />
         ))}
       </div>
     );
   }
 
-  // Client-side filtering
-  let filtered = influencers;
+  let filtered = channels;
   if (search) {
-    const q = search.toLowerCase();
+    const query = search.toLowerCase();
     filtered = filtered.filter(
-      (i) => i.name.toLowerCase().includes(q) || i.handle.toLowerCase().includes(q),
+      (channel) =>
+        channel.name.toLowerCase().includes(query) ||
+        channel.handle.toLowerCase().includes(query) ||
+        channel.channelId.toLowerCase().includes(query),
     );
   }
-  if (filterPlatform !== 'all') {
-    filtered = filtered.filter((i) => i.platform === filterPlatform);
-  }
+
   if (filterStatus !== 'all') {
-    filtered = filtered.filter((i) => i.complianceStatus === filterStatus);
+    filtered = filtered.filter((channel) => channel.complianceStatus === filterStatus);
   }
 
-  const handleCreate = async (e: React.ChangeEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleCreate = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (!form.name || !form.handle) return;
+
     setIsCreating(true);
+
     try {
-      const monthlyRev = form.estimatedMonthlyRevenue
-        ? parseFloat(form.estimatedMonthlyRevenue)
+      const monthlyRevenue = form.estimatedMonthlyRevenue
+        ? Number(form.estimatedMonthlyRevenue)
         : undefined;
-      const annualRev = form.estimatedAnnualRevenue
-        ? parseFloat(form.estimatedAnnualRevenue)
-        : monthlyRev
-          ? monthlyRev * 12
+      const annualRevenue = form.estimatedAnnualRevenue
+        ? Number(form.estimatedAnnualRevenue)
+        : monthlyRevenue !== undefined
+          ? monthlyRevenue * 12
           : undefined;
 
-      await createInfluencer({
+      await createChannel({
         name: form.name,
-        platform: form.platform,
-        handle: form.handle.replace('@', ''),
+        handle: form.handle,
         email: form.email || undefined,
-        region: (form.region || undefined) as (typeof REGIONS)[number] | undefined,
-        estimatedMonthlyRevenue: monthlyRev,
-        estimatedAnnualRevenue: annualRev,
-        taxLiability: annualRev ? Math.round(annualRev * 0.25) : undefined,
+        estimatedMonthlyRevenue: monthlyRevenue,
+        estimatedAnnualRevenue: annualRevenue,
         taxIdNumber: form.taxIdNumber || undefined,
+        notes: form.notes || undefined,
         complianceStatus: 'pending',
       });
+
       setForm({
         name: '',
-        platform: 'youtube',
         handle: '',
         email: '',
-        region: '',
         estimatedMonthlyRevenue: '',
         estimatedAnnualRevenue: '',
         taxIdNumber: '',
+        notes: '',
       });
       setShowAddDialog(false);
-    } catch (err) {
-      console.error('Failed to create influencer:', err);
+    } catch (error) {
+      console.error('Failed to create channel:', error);
     } finally {
       setIsCreating(false);
     }
@@ -208,11 +195,23 @@ export default function InfluencersPage() {
 
   return (
     <div className='space-y-6'>
-      {/* Header */}
+      {connectNotice ? (
+        <div
+          className={
+            connectNotice.tone === 'success'
+              ? 'rounded-xl border border-success/30 bg-success/5 px-4 py-3 text-sm text-success'
+              : 'rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive'
+          }
+        >
+          {connectNotice.message}
+        </div>
+      ) : null}
+
       <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>
           <p className='text-sm text-muted-foreground'>
-            {influencers.length} influencer{influencers.length !== 1 ? 's' : ''} registered
+            {channels.length} channel{channels.length !== 1 ? 's' : ''} tracked across public,
+            manual, and connected sources
           </p>
         </div>
         <Button
@@ -220,93 +219,64 @@ export default function InfluencersPage() {
           className='gap-2 bg-accent text-accent-foreground hover:bg-accent/90'
         >
           <HugeiconsIcon icon={Add01Icon} size={16} />
-          Add Influencer
+          Add Channel
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className='flex max-sm:flex-col flex-wrap gap-3'>
+      <div className='flex flex-wrap gap-3 max-sm:flex-col'>
         <InputGroup className='min-w-50 flex-1 bg-card'>
           <InputGroupAddon align='inline-start'>
             <HugeiconsIcon icon={Search01Icon} size={14} className='text-muted-foreground' />
           </InputGroupAddon>
           <InputGroupInput
             type='text'
-            placeholder='Search by name or handle...'
+            placeholder='Search by channel name, handle, or channel ID...'
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
           />
         </InputGroup>
-        <div className='flex w-full items-center justify-between gap-2'>
-          <Select
-            value={filterPlatform}
-            onValueChange={(value) => {
-              if (value) {
-                setFilterPlatform(value as (typeof PLATFORMS)[number] | 'all');
-              }
-            }}
-          >
-            <SelectTrigger className='w-full bg-card'>
-              <SelectValue placeholder='All Platforms' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All Platforms</SelectItem>
-              {PLATFORMS.map((p) => (
-                <SelectItem key={p} value={p}>
-                  {p.charAt(0).toUpperCase() + p.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={filterStatus}
-            onValueChange={(value) => {
-              if (value) {
-                setFilterStatus(value as (typeof COMPLIANCE_STATUSES)[number] | 'all');
-              }
-            }}
-          >
-            <SelectTrigger className='w-full bg-card'>
-              <SelectValue placeholder='All Statuses' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All Statuses</SelectItem>
-              {COMPLIANCE_STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+
+        <Select
+          value={filterStatus}
+          onValueChange={(value) => {
+            if (value) {
+              setFilterStatus(value as (typeof COMPLIANCE_STATUSES)[number] | 'all');
+            }
+          }}
+        >
+          <SelectTrigger className='w-full bg-card sm:w-56'>
+            <SelectValue placeholder='All statuses' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>All statuses</SelectItem>
+            {COMPLIANCE_STATUSES.map((status) => (
+              <SelectItem key={status} value={status}>
+                {titleCaseLabel(status)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Data table */}
       <div className='overflow-hidden rounded-xl border border-border/60 bg-card'>
         <div className='overflow-x-auto'>
           <table className='w-full text-sm'>
             <thead>
               <tr className='border-b border-border/60 bg-muted/30'>
                 <th className='px-4 py-3 text-left text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
-                  Name
+                  Channel
                 </th>
                 <th className='px-4 py-3 text-left text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
-                  Platform
-                </th>
-                <th className='px-4 py-3 text-left text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
-                  Handle
-                </th>
-                <th className='px-4 py-3 text-left text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
-                  Region
+                  Source Status
                 </th>
                 <th className='px-4 py-3 text-right text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
-                  Est. Revenue
+                  Revenue Input
                 </th>
                 <th className='px-4 py-3 text-right text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
-                  Tax Liability
+                  Tax Estimate
                 </th>
                 <th className='px-4 py-3 text-center text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
-                  Status
+                  Compliance
                 </th>
                 <th className='px-4 py-3 text-right text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
                   Actions
@@ -316,47 +286,100 @@ export default function InfluencersPage() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className='px-4 py-12 text-center text-muted-foreground'>
-                    {influencers.length === 0
-                      ? 'No influencers added yet. Click "Add Influencer" to get started.'
-                      : 'No influencers match your filters.'}
+                  <td colSpan={6} className='px-4 py-12 text-center text-muted-foreground'>
+                    {channels.length === 0
+                      ? 'No channels added yet. Import public YouTube data or create a manual channel record to get started.'
+                      : 'No channels match your filters.'}
                   </td>
                 </tr>
               ) : (
-                filtered.map((inf) => (
+                filtered.map((channel) => (
                   <tr
-                    key={inf._id}
-                    className='border-b border-border/40 transition-colors hover:bg-muted/20'
+                    key={channel._id}
+                    className='border-b border-border/40 align-top transition-colors hover:bg-muted/20'
                   >
-                    <td className='px-4 py-3'>
-                      <p className='font-medium'>{inf.name}</p>
-                      {inf.email && <p className='text-xs text-muted-foreground'>{inf.email}</p>}
+                    <td className='px-4 py-4'>
+                      <div className='space-y-1'>
+                        <p className='font-medium'>{channel.name}</p>
+                        <p className='font-mono text-xs text-muted-foreground'>
+                          @{channel.handle} {channel.channelId ? `• ${channel.channelId}` : ''}
+                        </p>
+                        {channel.email ? (
+                          <p className='text-xs text-muted-foreground'>{channel.email}</p>
+                        ) : null}
+                      </div>
                     </td>
-                    <td className='px-4 py-3'>
-                      <PlatformBadge platform={inf.platform} />
+
+                    <td className='px-4 py-4'>
+                      <div className='flex flex-wrap gap-2'>
+                        <SourceBadge label={formatPublicStatus(channel.publicDataStatus)} />
+                        <SourceBadge label={formatAnalyticsStatus(channel.analyticsStatus)} />
+                        {channel.hasManualFinancials ? (
+                          <SourceBadge label='Manual inputs' variant='secondary' />
+                        ) : null}
+                        {channel.hasTaxEstimate ? (
+                          <SourceBadge label='Tax estimate ready' variant='secondary' />
+                        ) : null}
+                        {channel.actionRequired ? (
+                          <SourceBadge label='Action required' variant='secondary' />
+                        ) : null}
+                      </div>
                     </td>
-                    <td className='px-4 py-3 font-mono text-xs text-muted-foreground'>
-                      @{inf.handle}
+
+                    <td className='px-4 py-4 text-right'>
+                      <p className='font-mono text-xs'>
+                        {channel.estimatedAnnualRevenue !== undefined
+                          ? formatCurrency(channel.estimatedAnnualRevenue)
+                          : '--'}
+                      </p>
+                      <p className='mt-1 text-xs text-muted-foreground'>
+                        {formatRevenueSource(channel.revenueSource)}
+                      </p>
                     </td>
-                    <td className='px-4 py-3 text-xs text-muted-foreground'>{inf.region ?? '—'}</td>
-                    <td className='px-4 py-3 text-right font-mono text-xs'>
-                      {inf.estimatedAnnualRevenue
-                        ? formatCurrency(inf.estimatedAnnualRevenue)
-                        : '—'}
+
+                    <td className='px-4 py-4 text-right'>
+                      <p className='font-mono text-xs font-medium text-chart-5'>
+                        {channel.estimatedTax !== undefined ? formatCurrency(channel.estimatedTax) : '--'}
+                      </p>
+                      <p className='mt-1 text-xs text-muted-foreground'>
+                        {channel.taxEstimateSource === 'none'
+                          ? 'No estimate yet'
+                          : formatRevenueSource(channel.taxEstimateSource)}
+                      </p>
                     </td>
-                    <td className='px-4 py-3 text-right font-mono text-xs font-medium text-accent'>
-                      {inf.taxLiability ? formatCurrency(inf.taxLiability) : '—'}
+
+                    <td className='px-4 py-4 text-center'>
+                      <StatusBadge status={channel.complianceStatus ?? 'pending'} />
                     </td>
-                    <td className='px-4 py-3 text-center'>
-                      <StatusBadge status={inf.complianceStatus ?? 'pending'} />
-                    </td>
-                    <td className='px-4 py-3 text-right'>
-                      <button
-                        onClick={() => deleteInfluencer({ id: inf._id as Id<'influencers'> })}
-                        className='text-xs text-destructive/65 hover:text-destructive'
-                      >
-                        Remove
-                      </button>
+
+                    <td className='px-4 py-4 text-right'>
+                      <div className='flex justify-end gap-3'>
+                        {!channel.channelId.startsWith('manual:') && !channel.channelId.startsWith('legacy:') ? (
+                          <Button
+                            variant='outline'
+                            size='sm'
+                            render={
+                              <Link
+                                href={`/api/youtube/connect?channelId=${encodeURIComponent(channel.channelId)}&returnTo=${encodeURIComponent('/influencers')}`}
+                              />
+                            }
+                            className='text-xs'
+                          >
+                            {channel.hasConnectedAnalytics ? 'Reconnect' : 'Connect YouTube'}
+                          </Button>
+                        ) : null}
+                        <button
+                          onClick={() =>
+                            deleteChannel({
+                              id: String(channel.docId ?? channel.legacyId ?? channel._id),
+                              table: channel.docId ? 'channels' : 'influencers',
+                            })
+                          }
+                          className='text-xs text-destructive/65 hover:text-destructive'
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -366,13 +389,15 @@ export default function InfluencersPage() {
         </div>
       </div>
 
-      {/* Add Influencer Sheet */}
       <Sheet open={showAddDialog} onOpenChange={setShowAddDialog}>
         <SheetContent className='w-full overflow-y-auto p-0 sm:max-w-md'>
           <div className='px-6 pt-6 pb-6'>
             <SheetHeader className='mb-6 p-0'>
-              <SheetTitle className='font-heading text-xl font-bold'>Add New Influencer</SheetTitle>
-              <SheetDescription>Register a new influencer in the system.</SheetDescription>
+              <SheetTitle className='font-heading text-xl font-bold'>Add Channel</SheetTitle>
+              <SheetDescription>
+                Create a manual channel record. Public imports and connected analytics can be added
+                later.
+              </SheetDescription>
             </SheetHeader>
 
             <form onSubmit={handleCreate} className='space-y-6'>
@@ -382,14 +407,14 @@ export default function InfluencersPage() {
                     htmlFor='name'
                     className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
                   >
-                    Full Name *
+                    Channel Name *
                   </Label>
                   <Input
                     id='name'
                     value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    onChange={(event) => setForm({ ...form, name: event.target.value })}
                     required
-                    placeholder='e.g. Kwame Asante'
+                    placeholder='e.g. Kwame Creates'
                     className='bg-secondary/20'
                   />
                 </div>
@@ -404,62 +429,11 @@ export default function InfluencersPage() {
                   <Input
                     id='handle'
                     value={form.handle}
-                    onChange={(e) => setForm({ ...form, handle: e.target.value })}
+                    onChange={(event) => setForm({ ...form, handle: event.target.value })}
                     required
                     placeholder='@channel_name'
                     className='bg-secondary/20'
                   />
-                </div>
-
-                <div className='grid grid-cols-2 gap-4'>
-                  <div className='grid gap-2'>
-                    <Label
-                      htmlFor='platform'
-                      className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
-                    >
-                      Platform *
-                    </Label>
-                    <Select
-                      value={form.platform}
-                      onValueChange={(value) =>
-                        setForm({ ...form, platform: value as 'youtube' | 'tiktok' })
-                      }
-                    >
-                      <SelectTrigger id='platform' className='bg-secondary/20'>
-                        <SelectValue placeholder='Select platform' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='youtube'>YouTube</SelectItem>
-                        <SelectItem value='tiktok'>TikTok</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className='grid gap-2'>
-                    <Label
-                      htmlFor='region'
-                      className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
-                    >
-                      Region
-                    </Label>
-                    <Select
-                      value={form.region}
-                      onValueChange={(value) =>
-                        setForm({ ...form, region: value as (typeof REGIONS)[number] })
-                      }
-                    >
-                      <SelectTrigger id='region' className='bg-secondary/20'>
-                        <SelectValue placeholder='Select region' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {REGIONS.map((r) => (
-                          <SelectItem key={r} value={r}>
-                            {r}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
 
                 <div className='grid gap-2'>
@@ -467,14 +441,14 @@ export default function InfluencersPage() {
                     htmlFor='email'
                     className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
                   >
-                    Email
+                    Contact Email
                   </Label>
                   <Input
                     id='email'
                     type='email'
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder='email@example.com'
+                    onChange={(event) => setForm({ ...form, email: event.target.value })}
+                    placeholder='creator@example.com'
                     className='bg-secondary/20'
                   />
                 </div>
@@ -489,7 +463,7 @@ export default function InfluencersPage() {
                   <Input
                     id='taxId'
                     value={form.taxIdNumber}
-                    onChange={(e) => setForm({ ...form, taxIdNumber: e.target.value })}
+                    onChange={(event) => setForm({ ...form, taxIdNumber: event.target.value })}
                     placeholder='GHA-XXXXX'
                     className='bg-secondary/20'
                   />
@@ -501,36 +475,60 @@ export default function InfluencersPage() {
                       htmlFor='monthlyRev'
                       className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
                     >
-                      Est. Monthly (GH&#8373;)
+                      Monthly Input ({currencyConfig.code})
                     </Label>
                     <Input
                       id='monthlyRev'
                       type='number'
                       value={form.estimatedMonthlyRevenue}
-                      onChange={(e) =>
-                        setForm({ ...form, estimatedMonthlyRevenue: e.target.value })
+                      onChange={(event) =>
+                        setForm({ ...form, estimatedMonthlyRevenue: event.target.value })
                       }
                       placeholder='0'
                       className='bg-secondary/20'
                     />
                   </div>
+
                   <div className='grid gap-2'>
                     <Label
                       htmlFor='annualRev'
                       className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
                     >
-                      Est. Annual (GH&#8373;)
+                      Annual Input ({currencyConfig.code})
                     </Label>
                     <Input
                       id='annualRev'
                       type='number'
                       value={form.estimatedAnnualRevenue}
-                      onChange={(e) => setForm({ ...form, estimatedAnnualRevenue: e.target.value })}
-                      placeholder='Auto'
+                      onChange={(event) =>
+                        setForm({ ...form, estimatedAnnualRevenue: event.target.value })
+                      }
+                      placeholder='Auto from monthly'
                       className='bg-secondary/20'
                     />
                   </div>
                 </div>
+
+                <div className='grid gap-2'>
+                  <Label
+                    htmlFor='notes'
+                    className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
+                  >
+                    Notes
+                  </Label>
+                  <Input
+                    id='notes'
+                    value={form.notes}
+                    onChange={(event) => setForm({ ...form, notes: event.target.value })}
+                    placeholder='Context for manual financial values or review status'
+                    className='bg-secondary/20'
+                  />
+                </div>
+              </div>
+
+              <div className='rounded-lg border border-border/60 bg-muted/20 p-4 text-xs text-muted-foreground'>
+                Public lookup does not include revenue. Manual financial inputs and future connected
+                analytics remain separate source types.
               </div>
 
               <div className='flex justify-end gap-3 border-t border-border pt-4'>
@@ -542,7 +540,7 @@ export default function InfluencersPage() {
                   disabled={isCreating}
                   className='bg-primary text-primary-foreground hover:bg-primary/90'
                 >
-                  {isCreating ? 'Adding...' : 'Add Influencer'}
+                  {isCreating ? 'Adding...' : 'Add Channel'}
                 </Button>
               </div>
             </form>

@@ -18,123 +18,114 @@ import { api } from '~convex/_generated/api';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatAnalyticsStatus, formatCurrency, formatRevenueSource } from '@/lib/product';
 
 const COMPLIANCE_COLORS: Record<string, string> = {
-  'compliant': 'oklch(0.55 0.16 150)',
+  compliant: 'oklch(0.55 0.16 150)',
   'non-compliant': 'oklch(0.55 0.22 27)',
-  'pending': 'oklch(0.72 0.12 80)',
+  pending: 'oklch(0.72 0.12 80)',
   'under-review': 'oklch(0.6 0.12 200)',
 };
 
-/**
- * Render a placeholder layout showing four skeleton cards used during loading.
- *
- * @returns A React element containing a responsive two-column grid with four large skeleton blocks
- */
 function AnalyticsSkeleton() {
   return (
     <div className='space-y-6'>
       <div className='grid gap-6 lg:grid-cols-2'>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className='h-80 rounded-xl' />
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className='h-80 rounded-xl' />
         ))}
       </div>
     </div>
   );
 }
 
-/**
- * Render the analytics dashboard with summary metrics, charts, and risk assessments.
- *
- * Renders summary cards for key metrics, a tax-gap vertical bar chart, a compliance distribution pie chart,
- * a regional distribution bar list, and an audit risk assessment list of top influencers. Shows skeleton UI
- * while metrics are loading and contextual placeholder messages when specific datasets are empty.
- *
- * @returns The page JSX element containing summary cards, tax-gap analysis, compliance distribution, regional distribution, and audit risk assessment.
- */
 export default function AnalyticsPage() {
   const metrics = useQuery(api.analytics.getDashboardMetrics);
   const compliance = useQuery(api.analytics.getComplianceBreakdown);
-  const regional = useQuery(api.analytics.getRegionalDistribution);
-  const revenueData = useQuery(api.analytics.getRevenueByMonth);
-  const topInfluencers = useQuery(api.analytics.getTopInfluencers);
+  const topChannels = useQuery(api.analytics.getTopInfluencers);
 
-  if (metrics === undefined) {
+  if (metrics === undefined || compliance === undefined || topChannels === undefined) {
     return <AnalyticsSkeleton />;
   }
 
-  const assessmentData = [
+  const trackData = [
     {
-      label: 'Approved',
-      value: metrics.approvedAssessments,
-      fill: 'var(--success)',
+      label: 'Public only',
+      value: metrics.publicOnlyChannels,
+      fill: 'var(--chart-1)',
     },
     {
-      label: 'Pending',
-      value: metrics.pendingAssessments,
+      label: 'Manual inputs',
+      value: metrics.manualInputChannels,
+      fill: 'var(--chart-2)',
+    },
+    {
+      label: 'Connected analytics',
+      value: metrics.connectedAnalyticsChannels,
+      fill: 'var(--chart-3)',
+    },
+    {
+      label: 'Action required',
+      value: metrics.actionRequiredChannels,
       fill: 'var(--warning)',
-    },
-    {
-      label: 'Disputed',
-      value: metrics.disputedAssessments,
-      fill: 'var(--destructive)',
     },
   ];
 
   return (
     <div className='stagger-children space-y-6'>
-      {/* Summary cards */}
       <div className='grid gap-4 sm:grid-cols-3'>
         <Card size='sm'>
           <CardHeader>
             <CardTitle className='text-xs font-medium tracking-wider text-muted-foreground uppercase'>
-              Total Tax Liability
+              Estimated Tax Output
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className='font-heading text-2xl font-bold text-accent'>
-              GH&#8373;{metrics.totalTaxLiability.toLocaleString()}
+            <p className='font-heading text-2xl font-bold text-chart-5'>
+              {formatCurrency(metrics.totalTaxLiability)}
             </p>
           </CardContent>
         </Card>
         <Card size='sm'>
           <CardHeader>
             <CardTitle className='text-xs font-medium tracking-wider text-muted-foreground uppercase'>
-              Approved Assessments
+              Connected Analytics
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className='font-heading text-2xl font-bold text-success'>
-              {metrics.approvedAssessments}
+              {metrics.connectedAnalyticsChannels}
             </p>
           </CardContent>
         </Card>
         <Card size='sm'>
           <CardHeader>
             <CardTitle className='text-xs font-medium tracking-wider text-muted-foreground uppercase'>
-              Disputed Cases
+              Channels Needing Review
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className='font-heading text-2xl font-bold text-destructive'>
-              {metrics.disputedAssessments}
+            <p className='font-heading text-2xl font-bold text-warning'>
+              {metrics.actionRequiredChannels}
             </p>
           </CardContent>
         </Card>
       </div>
 
       <div className='grid gap-6 lg:grid-cols-2'>
-        {/* Assessment status */}
         <Card>
           <CardHeader>
             <CardTitle className='font-heading text-sm font-semibold tracking-wider text-muted-foreground uppercase'>
-              Assessment Status
+              Track Coverage
             </CardTitle>
+            <CardDescription>
+              Public imports, manual inputs, and connected analytics stay separate.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {assessmentData.some((item) => item.value > 0) ? (
+            {trackData.some((item) => item.value > 0) ? (
               <ResponsiveContainer width='100%' height={280}>
-                <BarChart data={assessmentData} layout='vertical'>
+                <BarChart data={trackData} layout='vertical'>
                   <CartesianGrid strokeDasharray='3 3' stroke='var(--border)' horizontal={false} />
                   <XAxis type='number' tick={{ fontSize: 11 }} stroke='var(--muted-foreground)' />
                   <YAxis
@@ -142,12 +133,10 @@ export default function AnalyticsPage() {
                     type='category'
                     tick={{ fontSize: 11 }}
                     stroke='var(--muted-foreground)'
-                    width={100}
+                    width={120}
                   />
                   <Tooltip
-                    formatter={(value) =>
-                      Number(Array.isArray(value) ? (value[0] ?? 0) : (value ?? 0))
-                    }
+                    formatter={(value) => Number(Array.isArray(value) ? value[0] ?? 0 : value ?? 0)}
                     contentStyle={{
                       backgroundColor: 'var(--popover)',
                       border: '1px solid var(--border)',
@@ -156,7 +145,7 @@ export default function AnalyticsPage() {
                     }}
                   />
                   <Bar dataKey='value' radius={[0, 4, 4, 0]}>
-                    {assessmentData.map((entry, index) => (
+                    {trackData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Bar>
@@ -164,13 +153,12 @@ export default function AnalyticsPage() {
               </ResponsiveContainer>
             ) : (
               <div className='flex h-64 items-center justify-center text-sm text-muted-foreground'>
-                No assessment data available yet.
+                No source coverage data available yet.
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Compliance breakdown */}
         <Card>
           <CardHeader>
             <CardTitle className='font-heading text-sm font-semibold tracking-wider text-muted-foreground uppercase'>
@@ -178,12 +166,12 @@ export default function AnalyticsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {compliance && compliance.some((c) => c.count > 0) ? (
+            {compliance.some((entry) => entry.count > 0) ? (
               <div className='flex flex-col items-center'>
                 <ResponsiveContainer width='100%' height={220}>
                   <PieChart>
                     <Pie
-                      data={compliance.filter((c) => c.count > 0)}
+                      data={compliance.filter((entry) => entry.count > 0)}
                       cx='50%'
                       cy='50%'
                       innerRadius={50}
@@ -194,7 +182,7 @@ export default function AnalyticsPage() {
                       strokeWidth={0}
                     >
                       {compliance
-                        .filter((c) => c.count > 0)
+                        .filter((entry) => entry.count > 0)
                         .map((entry) => (
                           <Cell
                             key={entry.status}
@@ -207,15 +195,15 @@ export default function AnalyticsPage() {
                 </ResponsiveContainer>
                 <div className='mt-2 flex flex-wrap justify-center gap-4 text-xs'>
                   {compliance
-                    .filter((c) => c.count > 0)
-                    .map((c) => (
-                      <div key={c.status} className='flex items-center gap-2'>
+                    .filter((entry) => entry.count > 0)
+                    .map((entry) => (
+                      <div key={entry.status} className='flex items-center gap-2'>
                         <span
                           className='h-2.5 w-2.5 rounded-full'
-                          style={{ backgroundColor: COMPLIANCE_COLORS[c.status] }}
+                          style={{ backgroundColor: COMPLIANCE_COLORS[entry.status] }}
                         />
                         <span className='text-muted-foreground capitalize'>
-                          {c.status.replace('-', ' ')}: {c.count}
+                          {entry.status.replace('-', ' ')}: {entry.count}
                         </span>
                       </div>
                     ))}
@@ -229,94 +217,66 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Regional distribution */}
-        <Card>
+        <Card className='lg:col-span-2'>
           <CardHeader>
             <CardTitle className='font-heading text-sm font-semibold tracking-wider text-muted-foreground uppercase'>
-              Regional Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {regional && regional.length > 0 ? (
-              <div className='space-y-2'>
-                {regional.slice(0, 8).map((r) => {
-                  const max = regional[0].value;
-                  const pct = max > 0 ? (r.value / max) * 100 : 0;
-                  return (
-                    <div key={r.name} className='flex items-center gap-3'>
-                      <span className='w-28 shrink-0 text-xs text-muted-foreground'>{r.name}</span>
-                      <div className='flex-1'>
-                        <div className='h-5 w-full overflow-hidden rounded-full bg-muted'>
-                          <div
-                            className='h-full rounded-full bg-accent transition-all duration-500'
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </div>
-                      <span className='w-8 text-right text-xs font-medium'>{r.value}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className='flex h-48 items-center justify-center text-sm text-muted-foreground'>
-                No regional data yet.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Audit risk — top influencers by revenue (risk proxy) */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='font-heading text-sm font-semibold tracking-wider text-muted-foreground uppercase'>
-              Audit Risk Assessment
+              Source Risk Review
             </CardTitle>
             <CardDescription>
-              Lower compliance scores increase priority. Public YouTube imports may not include
-              revenue data.
+              Prioritize channels where provenance, connection status, or missing data needs follow-up.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {topInfluencers && topInfluencers.length > 0 ? (
-              <div className='space-y-2'>
-                {topInfluencers.slice(0, 6).map((inf) => {
-                  const score = inf.complianceScore ?? 50;
-                  const risk = score < 40 ? 'High' : score < 70 ? 'Medium' : 'Low';
+            {topChannels.length > 0 ? (
+              <div className='space-y-3'>
+                {topChannels.slice(0, 6).map((channel) => {
+                  const score = channel.complianceScore ?? 50;
+                  const risk = channel.actionRequired || score < 40 ? 'High' : score < 70 ? 'Medium' : 'Low';
                   const riskVariant =
                     risk === 'High'
                       ? 'destructive'
                       : risk === 'Medium'
                         ? ('secondary' as const)
                         : ('default' as const);
+
                   return (
                     <div
-                      key={inf._id}
-                      className='flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/30'
+                      key={channel._id}
+                      className='flex flex-col gap-3 rounded-lg px-3 py-3 hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between'
                     >
                       <div>
-                        <p className='text-sm font-medium'>{inf.name}</p>
-                        <p className='text-xs text-muted-foreground'>Score: {score}/100</p>
+                        <p className='text-sm font-medium'>{channel.name}</p>
+                        <p className='text-xs text-muted-foreground'>
+                          {formatRevenueSource(channel.revenueSource)} • {formatAnalyticsStatus(channel.analyticsStatus)}
+                        </p>
+                        <p className='mt-1 text-xs text-muted-foreground'>
+                          {channel.estimatedAnnualRevenue !== undefined
+                            ? `${formatCurrency(channel.estimatedAnnualRevenue)} annual input tracked`
+                            : 'No confirmed revenue input yet'}
+                        </p>
                       </div>
-                      <Badge
-                        variant={riskVariant}
-                        className={
-                          risk === 'Medium'
-                            ? 'bg-warning/10 text-warning'
-                            : risk === 'Low'
-                              ? 'bg-success/10 text-success'
-                              : undefined
-                        }
-                      >
-                        {risk} Risk
-                      </Badge>
+                      <div className='flex items-center gap-2'>
+                        <Badge
+                          variant={riskVariant}
+                          className={
+                            risk === 'Medium'
+                              ? 'bg-warning/10 text-warning'
+                              : risk === 'Low'
+                                ? 'bg-success/10 text-success'
+                                : undefined
+                          }
+                        >
+                          {risk} Risk
+                        </Badge>
+                        <Badge variant='outline'>{formatAnalyticsStatus(channel.analyticsStatus)}</Badge>
+                      </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
               <div className='flex h-40 items-center justify-center text-sm text-muted-foreground'>
-                No data for risk assessment.
+                No channels available for analytics review.
               </div>
             )}
           </CardContent>

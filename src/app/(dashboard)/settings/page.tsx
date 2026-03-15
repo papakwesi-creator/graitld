@@ -1,12 +1,14 @@
 'use client';
 
-import { Clock01Icon, Moon02Icon, Settings01Icon, Sun01Icon } from '@hugeicons/core-free-icons';
+import { Clock01Icon, InformationCircleIcon, Moon02Icon, Settings01Icon, Sun01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from 'convex/react';
+import Link from 'next/link';
 import { api } from '~convex/_generated/api';
 
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -24,7 +26,9 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'appearance' as const, label: 'Appearance', icon: Sun01Icon },
+    { id: 'connections' as const, label: 'Connections', icon: Settings01Icon },
     { id: 'activity' as const, label: 'Activity Log', icon: Clock01Icon },
+    { id: 'about' as const, label: 'About', icon: InformationCircleIcon },
   ];
 
   return (
@@ -41,10 +45,58 @@ export default function SettingsPage() {
       <TabsContent value='appearance'>
         <AppearanceSection theme={theme} setTheme={setTheme} />
       </TabsContent>
+      <TabsContent value='connections'>
+        <ConnectionsSection />
+      </TabsContent>
       <TabsContent value='activity'>
         <ActivitySection logs={recentLogs} />
       </TabsContent>
+      <TabsContent value='about'>
+        <AboutSection />
+      </TabsContent>
     </Tabs>
+  );
+}
+
+function ConnectionsSection() {
+  return (
+    <div className='rounded-xl border border-border/60 bg-card p-6'>
+      <h2 className='font-heading text-base font-semibold'>Connected Analytics</h2>
+      <p className='mt-1 text-sm text-muted-foreground'>
+        Analytics connections now start from an individual channel so each Google authorization is
+        linked to the correct YouTube channel record.
+      </p>
+
+      <div className='mt-6 grid gap-4 md:grid-cols-[1.4fr_1fr]'>
+        <div className='rounded-xl border border-border/60 bg-background/60 p-4'>
+          <p className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
+            How it works
+          </p>
+          <div className='mt-3 space-y-2 text-sm text-muted-foreground'>
+            <p>Select a channel from the Channels page</p>
+            <p>Authorize Google access for that channel owner account</p>
+            <p>Validate that the Google account manages the selected YouTube channel</p>
+            <p>Store the connection and import the latest analytics revenue snapshot</p>
+          </div>
+        </div>
+
+        <div className='rounded-xl border border-border/60 bg-background/60 p-4'>
+          <p className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
+            Start from channels
+          </p>
+          <p className='mt-3 text-sm text-muted-foreground'>
+            Use the per-channel `Connect YouTube` button so analytics never attach to the wrong
+            record.
+          </p>
+          <Button
+            className='mt-4 w-full'
+            render={<Link href='/influencers' />}
+          >
+            Open Channels
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -241,7 +293,7 @@ export function AboutSection() {
             className='shrink-0 rounded-lg'
           />
           <div>
-            <h2 className='font-heading text-base font-semibold'>GRA Influencer Tax Dashboard</h2>
+            <h2 className='font-heading text-base font-semibold'>GRA YouTube Tax Dashboard</h2>
             <p className='text-sm text-muted-foreground'>Version 1.0.0 — Final Year Project</p>
           </div>
         </div>
@@ -251,7 +303,7 @@ export function AboutSection() {
         <div className='mt-5 space-y-4'>
           <div className='grid gap-4 sm:grid-cols-2'>
             <InfoRow label='Organization' value='Ghana Revenue Authority' />
-            <InfoRow label='Division' value='Influencer Tax Division' />
+            <InfoRow label='Division' value='YouTube Creator Tax Operations' />
             <InfoRow label='Platform' value='Next.js + Convex' />
             <InfoRow label='License' value='Internal Use Only' />
           </div>
@@ -273,10 +325,10 @@ export function AboutSection() {
       <div className='rounded-xl border border-border/60 bg-card p-6'>
         <h3 className='text-sm font-semibold'>Purpose</h3>
         <p className='mt-2 text-sm leading-relaxed text-muted-foreground'>
-          This dashboard enables Ghana Revenue Authority officers to assess, track, and manage tax
-          liabilities for social media influencers operating within Ghana. It integrates channel
-          metrics from platforms like YouTube and TikTok to estimate taxable income and ensure
-          compliance with Ghanaian tax regulations.
+          This dashboard helps Ghana Revenue Authority officers separate public YouTube channel
+          data, optional owner-authorized analytics, manual financial inputs, and derived tax
+          estimates. Public lookup stays revenue-free, while connected analytics remains optional
+          and permission-based.
         </p>
       </div>
     </div>

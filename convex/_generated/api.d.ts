@@ -11,6 +11,7 @@
 import type * as analytics from "../analytics.js";
 import type * as auditLogs from "../auditLogs.js";
 import type * as auth from "../auth.js";
+import type * as channelData from "../channelData.js";
 import type * as http from "../http.js";
 import type * as influencers from "../influencers.js";
 
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   auditLogs: typeof auditLogs;
   auth: typeof auth;
+  channelData: typeof channelData;
   http: typeof http;
   influencers: typeof influencers;
 }>;

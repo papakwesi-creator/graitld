@@ -9,56 +9,47 @@ import { api } from '~convex/_generated/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { currencyConfig, formatCurrency } from '@/lib/product';
 
-type ReportType = 'tax-summary' | 'compliance-overview' | 'influencer-list' | 'revenue-analysis';
+type ReportType = 'tax-summary' | 'compliance-overview' | 'channel-registry' | 'source-readiness';
 
 const REPORT_TYPES: { value: ReportType; label: string; description: string }[] = [
   {
     value: 'tax-summary',
     label: 'Tax Summary Report',
-    description: 'Comprehensive overview of tax liabilities and collections',
+    description: 'Overview of current source-backed revenue inputs and estimated tax output',
   },
   {
     value: 'compliance-overview',
     label: 'Compliance Overview',
-    description: 'Breakdown of compliance status across all influencers',
+    description: 'Breakdown of compliance status across tracked YouTube channels',
   },
   {
-    value: 'influencer-list',
-    label: 'Influencer Registry',
-    description: 'Complete list of registered influencers with details',
+    value: 'channel-registry',
+    label: 'Channel Registry',
+    description: 'Channel list with public, analytics, and manual source visibility',
   },
   {
-    value: 'revenue-analysis',
-    label: 'Revenue Analysis',
-    description: 'Estimated revenue breakdown where revenue data is available',
+    value: 'source-readiness',
+    label: 'Source Readiness',
+    description: 'Operational view of public imports, connected analytics, and action-required states',
   },
 ];
 
-/**
- * Render the Reports page and provide UI for generating and downloading predefined reports.
- *
- * Fetches dashboard metrics, influencer records, and compliance breakdown; displays skeletons while loading,
- * renders a card for each report type with a "Generate & Download" action, and shows a report history placeholder.
- * The page includes a handler that builds a plain-text report for the selected type and triggers a client-side download.
- *
- * @returns The Reports page React element
- */
 export default function ReportsPage() {
   const metrics = useQuery(api.analytics.getDashboardMetrics);
-  const influencers = useQuery(api.influencers.getInfluencers, {});
+  const channels = useQuery(api.influencers.getInfluencers, {});
   const compliance = useQuery(api.analytics.getComplianceBreakdown);
 
   const [generating, setGenerating] = useState(false);
 
-  // Show skeleton while data is loading
-  if (metrics === undefined || influencers === undefined || compliance === undefined) {
+  if (metrics === undefined || channels === undefined || compliance === undefined) {
     return (
       <div className='space-y-6'>
         <Skeleton className='h-5 w-80' />
         <div className='grid gap-4 sm:grid-cols-2'>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className='h-36 rounded-xl' />
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} className='h-36 rounded-xl' />
           ))}
         </div>
         <Skeleton className='h-40 rounded-xl' />
@@ -69,9 +60,7 @@ export default function ReportsPage() {
   const generateReport = async (type: ReportType) => {
     setGenerating(true);
 
-    // Build report content based on type
-    let reportContent = '';
-    const now = new Date().toLocaleDateString('en-GH', {
+    const now = new Date().toLocaleDateString(currencyConfig.locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -79,70 +68,70 @@ export default function ReportsPage() {
 
     const header = `
 GHANA REVENUE AUTHORITY
-Influencer Tax Liability Dashboard
+GRA YOUTUBE TAX DASHBOARD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Generated: ${now}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 `;
 
-    if (type === 'tax-summary' && metrics) {
+    let reportContent = '';
+
+    if (type === 'tax-summary') {
       reportContent = `${header}TAX SUMMARY REPORT
 
-Total Registered Influencers: ${metrics.totalInfluencers}
-Total Estimated Revenue: GH₵${metrics.totalEstimatedRevenue.toLocaleString()}
-Total Tax Liability: GH₵${metrics.totalTaxLiability.toLocaleString()}
+Tracked Channels: ${metrics.totalChannels}
+Estimated Revenue Inputs: ${formatCurrency(metrics.totalEstimatedRevenue)}
+Estimated Tax Output: ${formatCurrency(metrics.totalTaxLiability)}
 Compliance Rate: ${metrics.complianceRate}%
-Pending Assessments: ${metrics.pendingAssessments}
-Approved Assessments: ${metrics.approvedAssessments}
-Disputed Assessments: ${metrics.disputedAssessments}
+Public-only Channels: ${metrics.publicOnlyChannels}
+Connected Analytics Channels: ${metrics.connectedAnalyticsChannels}
+Manual Input Channels: ${metrics.manualInputChannels}
+Action Required: ${metrics.actionRequiredChannels}
 `;
-    } else if (type === 'compliance-overview' && compliance) {
+    } else if (type === 'compliance-overview') {
       reportContent = `${header}COMPLIANCE OVERVIEW
 
 Status Breakdown:
-${compliance.map((c) => `  ${c.status.toUpperCase().padEnd(16)} ${c.count} influencer(s)`).join('\n')}
+${compliance.map((entry) => `  ${entry.status.toUpperCase().padEnd(16)} ${entry.count} channel(s)`).join('\n')}
 `;
-    } else if (type === 'influencer-list' && influencers) {
-      reportContent = `${header}INFLUENCER REGISTRY
+    } else if (type === 'channel-registry') {
+      reportContent = `${header}CHANNEL REGISTRY
 
-Total Records: ${influencers.length}
+Total Records: ${channels.length}
 
-${'Name'.padEnd(25)} ${'Platform'.padEnd(10)} ${'Handle'.padEnd(20)} ${'Status'.padEnd(15)} Est. Revenue
-${'─'.repeat(90)}
-${influencers
+${'Name'.padEnd(24)} ${'Handle'.padEnd(20)} ${'Revenue Source'.padEnd(25)} Tax Estimate
+${'─'.repeat(92)}
+${channels
   .map(
-    (i) =>
-      `${i.name.padEnd(25)} ${i.platform.padEnd(10)} @${i.handle.padEnd(19)} ${(i.complianceStatus ?? 'pending').padEnd(15)} ${i.estimatedAnnualRevenue !== undefined ? `GH₵${i.estimatedAnnualRevenue.toLocaleString()}` : 'N/A (public data)'}`,
+    (channel) =>
+      `${channel.name.padEnd(24)} @${channel.handle.padEnd(19)} ${channel.revenueSource.padEnd(25)} ${channel.estimatedTax !== undefined ? formatCurrency(channel.estimatedTax) : 'Not calculated'}`,
   )
   .join('\n')}
 `;
-    } else if (type === 'revenue-analysis' && influencers) {
-      const youtubeRev = influencers
-        .filter((i) => i.platform === 'youtube')
-        .reduce((s, i) => s + (i.estimatedAnnualRevenue ?? 0), 0);
-      const tiktokRev = influencers
-        .filter((i) => i.platform === 'tiktok')
-        .reduce((s, i) => s + (i.estimatedAnnualRevenue ?? 0), 0);
+    } else if (type === 'source-readiness') {
+      reportContent = `${header}SOURCE READINESS REPORT
 
-      reportContent = `${header}REVENUE ANALYSIS
+Public imports active: ${channels.filter((channel) => channel.publicDataStatus === 'public_imported').length}
+Manual-only records: ${channels.filter((channel) => channel.publicDataStatus === 'manual_only').length}
+Public refresh failures: ${channels.filter((channel) => channel.publicDataStatus === 'refresh_failed').length}
+Connected analytics active: ${channels.filter((channel) => channel.analyticsStatus === 'active').length}
+Analytics reconnect or review needed: ${channels.filter((channel) => channel.actionRequired).length}
 
-Only records with stored revenue estimates are included below.
-
-By Platform:
-  YouTube:  GH₵${youtubeRev.toLocaleString()}
-  TikTok:   GH₵${tiktokRev.toLocaleString()}
-  Total:    GH₵${(youtubeRev + tiktokRev).toLocaleString()}
+Channels requiring follow-up:
+${channels
+  .filter((channel) => channel.actionRequired)
+  .map((channel) => `  - ${channel.name} (@${channel.handle}) — ${channel.analyticsStatus}`)
+  .join('\n') || '  None'}
 `;
     }
 
-    // Trigger download as text file (PDF could be added with jspdf)
     const blob = new Blob([reportContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `gra-${type}-${new Date().toISOString().split('T')[0]}.txt`;
-    a.click();
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `gra-${type}-${new Date().toISOString().split('T')[0]}.txt`;
+    anchor.click();
     URL.revokeObjectURL(url);
 
     setGenerating(false);
@@ -151,8 +140,9 @@ By Platform:
   return (
     <div className='stagger-children space-y-6'>
       <p className='text-sm text-muted-foreground'>
-        Generate and download reports for tax analysis, compliance tracking, and influencer
-        management. Public YouTube imports do not include API-backed revenue estimates.
+        Generate source-aware reports for public YouTube imports, optional connected analytics,
+        manual financial inputs, and tax estimates. Public lookup never implies private revenue
+        access.
       </p>
 
       <div className='grid gap-4 sm:grid-cols-2'>
@@ -170,7 +160,7 @@ By Platform:
                 <p className='mt-1 text-xs text-muted-foreground'>{report.description}</p>
                 <Button
                   onClick={() => generateReport(report.value)}
-                  disabled={generating || metrics === undefined}
+                  disabled={generating}
                   variant='outline'
                   className='mt-4 gap-2 text-xs'
                   size='sm'
@@ -184,16 +174,16 @@ By Platform:
         ))}
       </div>
 
-      {/* Recently generated placeholder */}
       <Card>
         <CardHeader>
           <CardTitle className='font-heading text-sm font-semibold tracking-wider text-muted-foreground uppercase'>
-            Report History
+            Report Notes
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className='py-8 text-center text-sm text-muted-foreground'>
-            Generated reports will appear here. Reports are downloaded directly to your device.
+          <p className='text-sm text-muted-foreground'>
+            Downloaded reports reflect the current distinction between public channel metadata,
+            owner-authorized analytics, manual financial inputs, and internal tax estimates.
           </p>
         </CardContent>
       </Card>

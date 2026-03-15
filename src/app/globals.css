@@ -247,17 +247,6 @@
   opacity: 0.5;
 }
 
-.gradient-border-bottom::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
-  opacity: 0.5;
-}
-
 /* ============================================
    Subtle Grid Background
    ============================================ */
@@ -354,4 +343,7 @@ input[type='number'] {
 }
 .status-pending {
   @apply bg-warning/10 text-warning border-warning/20;
+}
+.status-under-review {
+  @apply bg-chart-5/10 text-chart-5 border-chart-5/20;
 }

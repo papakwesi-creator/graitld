@@ -39,7 +39,7 @@ const navItems: {
     icon: DashboardSquare02Icon,
   },
   {
-    title: 'Influencers',
+    title: 'Channels',
     href: '/influencers',
     icon: UserGroupIcon,
   },
@@ -87,10 +87,10 @@ export const AppSidebar = () => {
           <Image alt='GRA logo' src='/logo.png' width={80} height={60} className='shadow' />
           <div className='flex flex-col gap-0.5'>
             <span className='font-heading text-sm font-bold tracking-tight text-sidebar-foreground'>
-              Tax Dashboard
+              YouTube Tax Dashboard
             </span>
             <span className='text-[10px] font-medium tracking-wider text-sidebar-foreground/50 uppercase'>
-              Influencer Division
+              YouTube Operations
             </span>
           </div>
         </div>
@@ -99,7 +99,7 @@ export const AppSidebar = () => {
       <SidebarContent className='px-2'>
         <SidebarGroup>
           <SidebarGroupLabel className='mb-2 px-2 text-[10px] font-bold tracking-widest text-sidebar-foreground/40 uppercase'>
-            Platform
+            Navigation
           </SidebarGroupLabel>
           <SidebarMenu className='space-y-1'>
             {navItems.map(({ icon, href, title }) => {
