@@ -506,7 +506,7 @@ export default function InfluencersPage() {
                       htmlFor='monthlyRev'
                       className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
                     >
-                      Monthly Input ({currencyConfig.code})
+                      Monthly Input ({currencyConfig.symbol})
                     </Label>
                     <Input
                       id='monthlyRev'
@@ -525,7 +525,7 @@ export default function InfluencersPage() {
                       htmlFor='annualRev'
                       className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
                     >
-                      Annual Input ({currencyConfig.code})
+                      Annual Input ({currencyConfig.symbol})
                     </Label>
                     <Input
                       id='annualRev'

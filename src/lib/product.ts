@@ -4,6 +4,7 @@ export const PRODUCT_DESCRIPTION =
 
 export const currencyConfig = {
   code: 'GHS',
+  symbol: 'GH₵',
   locale: 'en-GH',
   taxRate: 0.25,
 };
@@ -13,14 +14,14 @@ export function formatCurrency(value: number, options?: { compact?: boolean; max
 
   if (compact) {
     if (Math.abs(value) >= 1_000_000) {
-      return `${currencyConfig.code} ${(value / 1_000_000).toFixed(1)}M`;
+      return `${currencyConfig.symbol} ${(value / 1_000_000).toFixed(1)}M`;
     }
     if (Math.abs(value) >= 1_000) {
-      return `${currencyConfig.code} ${(value / 1_000).toFixed(1)}K`;
+      return `${currencyConfig.symbol} ${(value / 1_000).toFixed(1)}K`;
     }
   }
 
-  return `${currencyConfig.code} ${value.toLocaleString(currencyConfig.locale, {
+  return `${currencyConfig.symbol} ${value.toLocaleString(currencyConfig.locale, {
     minimumFractionDigits: 0,
     maximumFractionDigits,
   })}`;
