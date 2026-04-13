@@ -20,7 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatAnalyticsStatus, formatCurrency, formatRevenueSource } from '@/lib/product';
 import {
-  ESTIMATED_REVENUE_NOTE,
+  ESTIMATED_REVENUE_DISCLAIMER,
   estimateRevenueFromViews,
   formatEstimatedRevenueUsd,
 } from '@/lib/revenue-estimate';
@@ -244,6 +244,18 @@ export default function AnalyticsPage() {
                         ? ('secondary' as const)
                         : ('default' as const);
 
+                  let revenueLabel: string;
+                  if (channel.estimatedAnnualRevenue !== undefined) {
+                    revenueLabel = `${formatCurrency(channel.estimatedAnnualRevenue)} annual input tracked`;
+                  } else if (channel.totalViews !== undefined) {
+                    const viewEstimate = formatEstimatedRevenueUsd(
+                      estimateRevenueFromViews(channel.totalViews, channel.topicCategories ?? []),
+                    );
+                    revenueLabel = `${viewEstimate} estimated revenue — ${ESTIMATED_REVENUE_DISCLAIMER}`;
+                  } else {
+                    revenueLabel = 'No confirmed revenue input yet';
+                  }
+
                   return (
                     <div
                       key={channel._id}
@@ -255,11 +267,7 @@ export default function AnalyticsPage() {
                           {formatRevenueSource(channel.revenueSource)} • {formatAnalyticsStatus(channel.analyticsStatus)}
                         </p>
                         <p className='mt-1 text-xs text-muted-foreground'>
-                          {channel.estimatedAnnualRevenue !== undefined
-                            ? `${formatCurrency(channel.estimatedAnnualRevenue)} annual input tracked`
-                            : channel.totalViews !== undefined
-                              ? `${formatEstimatedRevenueUsd(estimateRevenueFromViews(channel.totalViews, channel.topicCategories ?? []))} estimated revenue — ${ESTIMATED_REVENUE_NOTE}`
-                              : 'No confirmed revenue input yet'}
+                          {revenueLabel}
                         </p>
                       </div>
                       <div className='flex items-center gap-2'>

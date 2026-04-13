@@ -13,7 +13,7 @@ const RPM_BENCHMARKS: RpmBenchmark[] = [
 
 const DEFAULT_RPM = 4;
 
-export const ESTIMATED_REVENUE_NOTE =
+export const ESTIMATED_REVENUE_DISCLAIMER =
   'Based on public view data and industry-average RPM. Connect your YouTube account for exact figures.';
 
 export function getRpmForTopicCategories(topicCategories: string[]): number {

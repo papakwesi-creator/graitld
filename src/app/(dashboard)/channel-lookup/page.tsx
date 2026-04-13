@@ -18,7 +18,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/lib/product';
 import {
-  ESTIMATED_REVENUE_NOTE,
+  ESTIMATED_REVENUE_DISCLAIMER,
   estimateRevenueFromViews,
   formatEstimatedRevenueUsd,
 } from '@/lib/revenue-estimate';
@@ -302,7 +302,7 @@ export default function ChannelLookupPage() {
                       estimateRevenueFromViews(result.totalViews, result.topicCategories),
                     )}
                   </p>
-                  <p className='mt-1 text-xs text-muted-foreground'>{ESTIMATED_REVENUE_NOTE}</p>
+                  <p className='mt-1 text-xs text-muted-foreground'>{ESTIMATED_REVENUE_DISCLAIMER}</p>
                 </>
               ) : (
                 <p className='mt-2 text-sm text-muted-foreground'>

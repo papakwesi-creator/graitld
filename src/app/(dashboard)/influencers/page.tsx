@@ -36,7 +36,7 @@ import {
   titleCaseLabel,
 } from '@/lib/product';
 import {
-  ESTIMATED_REVENUE_NOTE,
+  ESTIMATED_REVENUE_DISCLAIMER,
   estimateRevenueFromViews,
   formatEstimatedRevenueUsd,
 } from '@/lib/revenue-estimate';
@@ -355,7 +355,7 @@ export default function InfluencersPage() {
                             Estimated Revenue
                           </p>
                           <p className='mt-0.5 max-w-[160px] text-[10px] leading-tight text-muted-foreground/70'>
-                            {ESTIMATED_REVENUE_NOTE}
+                            {ESTIMATED_REVENUE_DISCLAIMER}
                           </p>
                         </>
                       ) : (
