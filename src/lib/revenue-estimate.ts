@@ -1,3 +1,5 @@
+import { currencyConfig } from './product';
+
 type RpmBenchmark = {
   keywords: string[];
   rpm: number;
@@ -38,12 +40,15 @@ export function estimateRevenueFromViews(
   return (totalViews / 1000) * rpm;
 }
 
-export function formatEstimatedRevenueUsd(value: number): string {
+export function formatEstimatedRevenue(value: number): string {
   if (value >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(1)}M`;
+    return `${currencyConfig.symbol} ${(value / 1_000_000).toFixed(1)}M`;
   }
   if (value >= 1_000) {
-    return `$${(value / 1_000).toFixed(1)}K`;
+    return `${currencyConfig.symbol} ${(value / 1_000).toFixed(1)}K`;
   }
-  return `$${Math.round(value).toLocaleString('en-US')}`;
+  return `${currencyConfig.symbol} ${Math.round(value).toLocaleString(currencyConfig.locale)}`;
 }
+
+/** @deprecated Use {@link formatEstimatedRevenue} instead. */
+export const formatEstimatedRevenueUsd = formatEstimatedRevenue;

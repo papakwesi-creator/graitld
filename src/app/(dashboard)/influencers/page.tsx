@@ -38,7 +38,7 @@ import {
 import {
   ESTIMATED_REVENUE_DISCLAIMER,
   estimateRevenueFromViews,
-  formatEstimatedRevenueUsd,
+  formatEstimatedRevenue,
 } from '@/lib/revenue-estimate';
 
 const COMPLIANCE_STATUSES = ['compliant', 'non-compliant', 'pending', 'under-review'] as const;
@@ -344,7 +344,7 @@ export default function InfluencersPage() {
                       ) : channel.totalViews !== undefined ? (
                         <>
                           <p className='font-mono text-xs'>
-                            {formatEstimatedRevenueUsd(
+                            {formatEstimatedRevenue(
                               estimateRevenueFromViews(
                                 channel.totalViews,
                                 channel.topicCategories ?? [],

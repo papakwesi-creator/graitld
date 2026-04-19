@@ -1,5 +1,6 @@
 import type { Doc, Id } from './_generated/dataModel';
 import type { DatabaseReader } from './_generated/server';
+import { calculateGhanaTax } from './tax';
 
 export const DEFAULT_TAX_RATE = 0.25;
 const ANALYTICS_STALE_WINDOW_MS = 1000 * 60 * 60 * 24 * 35;
@@ -332,7 +333,7 @@ export function buildChannelSummaries(collections: ChannelCollections): ChannelS
       latestTaxEstimate?.estimatedTax ??
       legacy?.taxLiability ??
       (estimatedAnnualRevenue !== undefined
-        ? Math.round(estimatedAnnualRevenue * DEFAULT_TAX_RATE)
+        ? calculateGhanaTax(estimatedAnnualRevenue)
         : undefined);
 
     const hasManualFinancials =

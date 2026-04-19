@@ -22,7 +22,7 @@ import { formatAnalyticsStatus, formatCurrency, formatRevenueSource } from '@/li
 import {
   ESTIMATED_REVENUE_DISCLAIMER,
   estimateRevenueFromViews,
-  formatEstimatedRevenueUsd,
+  formatEstimatedRevenue,
 } from '@/lib/revenue-estimate';
 
 const COMPLIANCE_COLORS: Record<string, string> = {
@@ -248,7 +248,7 @@ export default function AnalyticsPage() {
                   if (channel.estimatedAnnualRevenue !== undefined) {
                     revenueLabel = `${formatCurrency(channel.estimatedAnnualRevenue)} annual input tracked`;
                   } else if (channel.totalViews !== undefined) {
-                    const viewEstimate = formatEstimatedRevenueUsd(
+                    const viewEstimate = formatEstimatedRevenue(
                       estimateRevenueFromViews(channel.totalViews, channel.topicCategories ?? []),
                     );
                     revenueLabel = `${viewEstimate} estimated revenue — ${ESTIMATED_REVENUE_DISCLAIMER}`;

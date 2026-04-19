@@ -20,7 +20,7 @@ import { formatDate } from '@/lib/product';
 import {
   ESTIMATED_REVENUE_DISCLAIMER,
   estimateRevenueFromViews,
-  formatEstimatedRevenueUsd,
+  formatEstimatedRevenue,
 } from '@/lib/revenue-estimate';
 
 const upsertChannelRef = api.influencers.upsertChannel;
@@ -298,7 +298,7 @@ export default function ChannelLookupPage() {
               {result.totalViews !== undefined ? (
                 <>
                   <p className='mt-2 text-xl font-semibold'>
-                    {formatEstimatedRevenueUsd(
+                    {formatEstimatedRevenue(
                       estimateRevenueFromViews(result.totalViews, result.topicCategories),
                     )}
                   </p>
