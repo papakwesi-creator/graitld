@@ -4,6 +4,7 @@ import type { Id } from './_generated/dataModel';
 import type { MutationCtx } from './_generated/server';
 import { mutation, query } from './_generated/server';
 import { DEFAULT_TAX_RATE, loadChannelSummaries } from './channelData';
+import { calculateGhanaTax, effectiveTaxRate } from './tax';
 import { requireAuth } from './auth';
 
 const complianceStatusValidator = v.union(
@@ -177,6 +178,7 @@ async function upsertTaxEstimateFromRevenue(
     (entry) => entry.periodStart === 1 && entry.periodEnd === 1 && entry.sourceType === 'manual',
   );
   const now = Date.now();
+  const estimatedTax = calculateGhanaTax(args.annualRevenue);
 
   const payload = {
     channelId: args.channelId,
@@ -188,12 +190,12 @@ async function upsertTaxEstimateFromRevenue(
     grossRevenue: args.annualRevenue,
     allowableDeductions: undefined,
     taxableIncome: args.annualRevenue,
-    taxRate: DEFAULT_TAX_RATE,
+    taxRate: effectiveTaxRate(args.annualRevenue),
     currency: 'GHS',
-    estimatedTax: Math.round(args.annualRevenue * DEFAULT_TAX_RATE),
+    estimatedTax,
     calculatedAt: now,
     calculatedBy: args.calculatedBy,
-    calculationVersion: 'wave-1',
+    calculationVersion: 'ghana-progressive-v1',
     notes: 'Derived from manual financial input',
   };
 
@@ -261,7 +263,14 @@ async function upsertAnalyticsSyncSnapshot(
     ? (await ctx.db.patch(matchingSync._id, syncPayload), matchingSync._id)
     : await ctx.db.insert('analyticsSyncs', syncPayload);
 
-  if (args.estimatedRevenue !== undefined) {
+  // Use actual analytics revenue when available; fall back to a view-count
+  // RPM estimate so tax is always derived regardless of revenue source.
+  const FALLBACK_RPM_GHS = 4; // GHS per 1,000 views (conservative built-in estimate)
+  const taxableRevenue =
+    args.estimatedRevenue ??
+    (args.views !== undefined ? (args.views / 1000) * FALLBACK_RPM_GHS : undefined);
+
+  if (taxableRevenue !== undefined) {
     const existingTaxEstimates = await ctx.db
       .query('taxEstimates')
       .withIndex('by_channelId_period', (q) => q.eq('channelId', args.channelId).eq('periodStart', args.periodStart))
@@ -273,6 +282,7 @@ async function upsertAnalyticsSyncSnapshot(
         entry.sourceType === 'analytics',
     );
 
+    const estimatedTax = calculateGhanaTax(taxableRevenue);
     const taxPayload = {
       channelId: args.channelId,
       periodStart: args.periodStart,
@@ -280,16 +290,19 @@ async function upsertAnalyticsSyncSnapshot(
       sourceType: 'analytics' as const,
       manualFinancialId: undefined,
       analyticsSyncId: syncId,
-      grossRevenue: args.estimatedRevenue,
+      grossRevenue: taxableRevenue,
       allowableDeductions: undefined,
-      taxableIncome: args.estimatedRevenue,
-      taxRate: DEFAULT_TAX_RATE,
+      taxableIncome: taxableRevenue,
+      taxRate: effectiveTaxRate(taxableRevenue),
       currency: 'GHS',
-      estimatedTax: Math.round(args.estimatedRevenue * DEFAULT_TAX_RATE),
+      estimatedTax,
       calculatedAt: Date.now(),
       calculatedBy: args.calculatedBy,
-      calculationVersion: 'wave-1',
-      notes: 'Derived from connected YouTube analytics',
+      calculationVersion: 'ghana-progressive-v1',
+      notes:
+        args.estimatedRevenue !== undefined
+          ? 'Derived from connected YouTube analytics'
+          : 'Derived from view-count RPM estimation (built-in fallback)',
     };
 
     if (analyticsEstimate) {

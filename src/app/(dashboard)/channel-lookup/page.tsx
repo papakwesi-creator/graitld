@@ -17,6 +17,11 @@ import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/lib/product';
+import {
+  ESTIMATED_REVENUE_DISCLAIMER,
+  estimateRevenueFromViews,
+  formatEstimatedRevenue,
+} from '@/lib/revenue-estimate';
 
 const upsertChannelRef = api.influencers.upsertChannel;
 
@@ -288,12 +293,22 @@ export default function ChannelLookupPage() {
             </div>
             <div className='rounded-lg border border-border/60 bg-background p-4'>
               <p className='text-[10px] font-semibold tracking-wider text-muted-foreground uppercase'>
-                Revenue Access
+                Estimated Revenue
               </p>
-              <p className='mt-2 text-sm text-muted-foreground'>
-                Not available from public YouTube Data API lookup. Connected analytics requires
-                channel owner authorization.
-              </p>
+              {result.totalViews !== undefined ? (
+                <>
+                  <p className='mt-2 text-xl font-semibold'>
+                    {formatEstimatedRevenue(
+                      estimateRevenueFromViews(result.totalViews, result.topicCategories),
+                    )}
+                  </p>
+                  <p className='mt-1 text-xs text-muted-foreground'>{ESTIMATED_REVENUE_DISCLAIMER}</p>
+                </>
+              ) : (
+                <p className='mt-2 text-sm text-muted-foreground'>
+                  Not available — public view count required for RPM estimate.
+                </p>
+              )}
             </div>
           </div>
 

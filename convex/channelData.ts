@@ -1,5 +1,6 @@
 import type { Doc, Id } from './_generated/dataModel';
 import type { DatabaseReader } from './_generated/server';
+import { calculateGhanaTax } from './tax';
 
 export const DEFAULT_TAX_RATE = 0.25;
 const ANALYTICS_STALE_WINDOW_MS = 1000 * 60 * 60 * 24 * 35;
@@ -328,14 +329,22 @@ export function buildChannelSummaries(collections: ChannelCollections): ChannelS
       analyticsMonthlyRevenue ??
       legacyMonthlyRevenue ??
       (estimatedAnnualRevenue !== undefined ? estimatedAnnualRevenue / 12 : undefined);
-    const estimatedTax = latestTaxEstimate?.estimatedTax ?? legacy?.taxLiability;
+    const estimatedTax =
+      latestTaxEstimate?.estimatedTax ??
+      legacy?.taxLiability ??
+      (estimatedAnnualRevenue !== undefined
+        ? calculateGhanaTax(estimatedAnnualRevenue)
+        : undefined);
 
     const hasManualFinancials =
       manualFinancialEntries.length > 0 ||
       legacy?.estimatedMonthlyRevenue !== undefined ||
       legacy?.estimatedAnnualRevenue !== undefined ||
       legacy?.source === 'manual';
-    const hasTaxEstimate = taxEstimateEntries.length > 0 || legacy?.taxLiability !== undefined;
+    const hasTaxEstimate =
+      taxEstimateEntries.length > 0 ||
+      legacy?.taxLiability !== undefined ||
+      estimatedAnnualRevenue !== undefined;
     const hasConnectedAnalytics = oauthEntries.length > 0;
     const hasPublicData = hasPublicChannelData(channel, legacy);
     const analyticsStatus = determineAnalyticsStatus(latestConnection, latestAnalytics);
@@ -389,7 +398,7 @@ export function buildChannelSummaries(collections: ChannelCollections): ChannelS
       estimatedAnnualRevenue,
       estimatedTax,
       revenueSource,
-      taxEstimateSource: latestTaxEstimate?.sourceType ?? (estimatedTax !== undefined ? 'legacy_unknown' : 'none'),
+      taxEstimateSource: latestTaxEstimate?.sourceType ?? (estimatedTax !== undefined ? revenueSource : 'none'),
       hasPublicData,
       hasManualFinancials,
       hasConnectedAnalytics,

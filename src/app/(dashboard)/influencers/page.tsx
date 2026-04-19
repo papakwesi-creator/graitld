@@ -35,6 +35,16 @@ import {
   formatRevenueSource,
   titleCaseLabel,
 } from '@/lib/product';
+import {
+  ESTIMATED_REVENUE_DISCLAIMER,
+  estimateRevenueFromViews,
+  formatEstimatedRevenue,
+} from '@/lib/revenue-estimate';
+import {
+  DEFAULT_TAX_PERIOD_DAYS,
+  estimateTaxForPeriod,
+  TAX_PERIOD_OPTIONS,
+} from '@/lib/tax-period-estimate';
 
 const COMPLIANCE_STATUSES = ['compliant', 'non-compliant', 'pending', 'under-review'] as const;
 
@@ -75,6 +85,7 @@ export default function InfluencersPage() {
   );
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [taxPeriodDays, setTaxPeriodDays] = useState<number>(DEFAULT_TAX_PERIOD_DAYS);
   const [form, setForm] = useState({
     name: '',
     handle: '',
@@ -148,6 +159,9 @@ export default function InfluencersPage() {
   if (filterStatus !== 'all') {
     filtered = filtered.filter((channel) => channel.complianceStatus === filterStatus);
   }
+
+  const selectedTaxPeriod =
+    TAX_PERIOD_OPTIONS.find((option) => option.days === taxPeriodDays) ?? TAX_PERIOD_OPTIONS[0];
 
   const handleCreate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -256,6 +270,24 @@ export default function InfluencersPage() {
             ))}
           </SelectContent>
         </Select>
+
+        <Select
+          value={String(taxPeriodDays)}
+          onValueChange={(value) => {
+            setTaxPeriodDays(Number(value));
+          }}
+        >
+          <SelectTrigger className='w-full bg-card sm:w-44'>
+            <SelectValue placeholder='Tax period' />
+          </SelectTrigger>
+          <SelectContent>
+            {TAX_PERIOD_OPTIONS.map((option) => (
+              <SelectItem key={option.days} value={String(option.days)}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className='overflow-hidden rounded-xl border border-border/60 bg-card'>
@@ -293,7 +325,9 @@ export default function InfluencersPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((channel) => (
+                filtered.map((channel) => {
+                  const periodTax = estimateTaxForPeriod(channel, taxPeriodDays);
+                  return (
                   <tr
                     key={channel._id}
                     className='border-b border-border/40 align-top transition-colors hover:bg-muted/20'
@@ -327,24 +361,50 @@ export default function InfluencersPage() {
                     </td>
 
                     <td className='px-4 py-4 text-right'>
-                      <p className='font-mono text-xs'>
-                        {channel.estimatedAnnualRevenue !== undefined
-                          ? formatCurrency(channel.estimatedAnnualRevenue)
-                          : '--'}
-                      </p>
-                      <p className='mt-1 text-xs text-muted-foreground'>
-                        {formatRevenueSource(channel.revenueSource)}
-                      </p>
+                      {channel.estimatedAnnualRevenue !== undefined ? (
+                        <>
+                          <p className='font-mono text-xs'>
+                            {formatCurrency(channel.estimatedAnnualRevenue)}
+                          </p>
+                          <p className='mt-1 text-xs text-muted-foreground'>
+                            {formatRevenueSource(channel.revenueSource)}
+                          </p>
+                        </>
+                      ) : channel.totalViews !== undefined ? (
+                        <>
+                          <p className='font-mono text-xs'>
+                            {formatEstimatedRevenue(
+                              estimateRevenueFromViews(
+                                channel.totalViews,
+                                channel.topicCategories ?? [],
+                              ),
+                            )}
+                          </p>
+                          <p className='mt-1 text-xs text-muted-foreground'>
+                            Estimated Revenue
+                          </p>
+                          <p className='mt-0.5 max-w-[160px] text-[10px] leading-tight text-muted-foreground/70'>
+                            {ESTIMATED_REVENUE_DISCLAIMER}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className='font-mono text-xs'>--</p>
+                          <p className='mt-1 text-xs text-muted-foreground'>
+                            {formatRevenueSource(channel.revenueSource)}
+                          </p>
+                        </>
+                      )}
                     </td>
 
                     <td className='px-4 py-4 text-right'>
                       <p className='font-mono text-xs font-medium text-chart-5'>
-                        {channel.estimatedTax !== undefined ? formatCurrency(channel.estimatedTax) : '--'}
+                        {periodTax !== undefined ? formatCurrency(periodTax) : '--'}
                       </p>
                       <p className='mt-1 text-xs text-muted-foreground'>
-                        {channel.taxEstimateSource === 'none'
-                          ? 'No estimate yet'
-                          : formatRevenueSource(channel.taxEstimateSource)}
+                        {periodTax !== undefined
+                          ? `Projected for ${selectedTaxPeriod.label}`
+                          : 'No estimate yet'}
                       </p>
                     </td>
 
@@ -382,7 +442,8 @@ export default function InfluencersPage() {
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -475,7 +536,7 @@ export default function InfluencersPage() {
                       htmlFor='monthlyRev'
                       className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
                     >
-                      Monthly Input ({currencyConfig.code})
+                      Monthly Input ({currencyConfig.symbol})
                     </Label>
                     <Input
                       id='monthlyRev'
@@ -494,7 +555,7 @@ export default function InfluencersPage() {
                       htmlFor='annualRev'
                       className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'
                     >
-                      Annual Input ({currencyConfig.code})
+                      Annual Input ({currencyConfig.symbol})
                     </Label>
                     <Input
                       id='annualRev'

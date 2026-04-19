@@ -13,11 +13,24 @@ import {
 import { api } from '~convex/_generated/api';
 
 import Link from 'next/link';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCompactNumber, formatCurrency, formatRevenueSource } from '@/lib/product';
+import {
+  DEFAULT_TAX_PERIOD_DAYS,
+  estimateTaxForPeriod,
+  TAX_PERIOD_OPTIONS,
+} from '@/lib/tax-period-estimate';
 
 function MetricCard({
   label,
@@ -67,12 +80,26 @@ function DashboardSkeleton() {
 }
 
 export default function OverviewPage() {
+  const [taxPeriodDays, setTaxPeriodDays] = useState<number>(DEFAULT_TAX_PERIOD_DAYS);
   const stats = useQuery(api.influencers.getInfluencerStats);
+  const channels = useQuery(api.influencers.getChannels, {});
   const revenueData = useQuery(api.analytics.getRevenueByMonth);
   const topChannels = useQuery(api.analytics.getTopInfluencers);
   const recentLogs = useQuery(api.auditLogs.getRecentLogs, { limit: 5 });
+  const selectedTaxPeriod = useMemo(
+    () => TAX_PERIOD_OPTIONS.find((option) => option.days === taxPeriodDays) ?? TAX_PERIOD_OPTIONS[0],
+    [taxPeriodDays],
+  );
+  const totalTaxForPeriod = useMemo(
+    () =>
+      (channels ?? []).reduce(
+        (sum, channel) => sum + (estimateTaxForPeriod(channel, taxPeriodDays) ?? 0),
+        0,
+      ),
+    [channels, taxPeriodDays],
+  );
 
-  if (stats === undefined) {
+  if (stats === undefined || channels === undefined) {
     return <DashboardSkeleton />;
   }
 
@@ -86,8 +113,8 @@ export default function OverviewPage() {
         />
         <MetricCard
           label='Estimated Tax Output'
-          value={formatCurrency(stats.totalEstimatedTax, { compact: true })}
-          subtitle='Derived separately from public metadata and source inputs'
+          value={formatCurrency(totalTaxForPeriod, { compact: true })}
+          subtitle={`Projected for ${selectedTaxPeriod.label} from available source data`}
           accentClass='text-chart-5'
         />
         <MetricCard
@@ -111,13 +138,30 @@ export default function OverviewPage() {
               Revenue Inputs &amp; Tax Estimates
             </CardTitle>
             <CardAction>
-              <div className='flex gap-2'>
+              <div className='flex flex-wrap items-center gap-2'>
                 <span className='flex items-center gap-1.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase'>
                   <span className='h-2 w-2 rounded-full bg-[oklch(0.6_0.18_250)]' /> Revenue inputs
                 </span>
                 <span className='flex items-center gap-1.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase'>
                   <span className='h-2 w-2 rounded-full bg-[oklch(0.65_0.18_150)]' /> Tax estimates
                 </span>
+                <Select
+                  value={String(taxPeriodDays)}
+                  onValueChange={(value) => {
+                    setTaxPeriodDays(Number(value));
+                  }}
+                >
+                  <SelectTrigger className='h-8 w-[110px] text-[10px] tracking-wider uppercase'>
+                    <SelectValue placeholder='Tax period' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TAX_PERIOD_OPTIONS.map((option) => (
+                      <SelectItem key={option.days} value={String(option.days)}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardAction>
           </CardHeader>
