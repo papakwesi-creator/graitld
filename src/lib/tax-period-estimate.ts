@@ -10,6 +10,7 @@ export const TAX_PERIOD_OPTIONS = [
 export const DEFAULT_TAX_PERIOD_DAYS = TAX_PERIOD_OPTIONS[0].days;
 const DAYS_IN_YEAR = 365;
 
+// Ghana Revenue Authority progressive personal income tax brackets (annual, GHS).
 const GHA_TAX_BRACKETS: Array<{ limit: number; rate: number }> = [
   { limit: 5_880, rate: 0 },
   { limit: 1_320, rate: 0.05 },
@@ -20,13 +21,16 @@ const GHA_TAX_BRACKETS: Array<{ limit: number; rate: number }> = [
   { limit: Infinity, rate: 0.35 },
 ];
 
-function calculateGhanaTax(annualIncome: number): number {
-  if (annualIncome <= 0) return 0;
+function calculateProgressiveTax(
+  income: number,
+  brackets: Array<{ limit: number; rate: number }>,
+): number {
+  if (income <= 0) return 0;
 
   let tax = 0;
-  let remaining = annualIncome;
+  let remaining = income;
 
-  for (const bracket of GHA_TAX_BRACKETS) {
+  for (const bracket of brackets) {
     if (remaining <= 0) break;
     const taxable = Number.isFinite(bracket.limit) ? Math.min(remaining, bracket.limit) : remaining;
     tax += taxable * bracket.rate;
@@ -66,6 +70,11 @@ export function estimateTaxForPeriod(channel: {
   const annualRevenue = estimateAnnualRevenue(channel);
   if (annualRevenue === undefined) return undefined;
 
-  const annualTax = calculateGhanaTax(annualRevenue);
-  return Math.round((annualTax * periodDays) / DAYS_IN_YEAR);
+  const periodRevenue = (annualRevenue * periodDays) / DAYS_IN_YEAR;
+  const periodBrackets = GHA_TAX_BRACKETS.map((bracket) => ({
+    limit: Number.isFinite(bracket.limit) ? (bracket.limit * periodDays) / DAYS_IN_YEAR : Infinity,
+    rate: bracket.rate,
+  }));
+
+  return calculateProgressiveTax(periodRevenue, periodBrackets);
 }
