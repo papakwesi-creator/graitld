@@ -115,7 +115,7 @@ export default function OverviewPage() {
           label='Estimated Tax Output'
           value={formatCurrency(totalTaxForPeriod, { compact: true })}
           subtitle={`Projected for ${selectedTaxPeriod.label} from available source data`}
-          accentClass='text-chart-5'
+          accentClass='text-primary'
         />
         <MetricCard
           label='Manual Input Coverage'
@@ -140,10 +140,10 @@ export default function OverviewPage() {
             <CardAction>
               <div className='flex flex-wrap items-center gap-2'>
                 <span className='flex items-center gap-1.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase'>
-                  <span className='h-2 w-2 rounded-full bg-[oklch(0.6_0.18_250)]' /> Revenue inputs
+                  <span className='h-2 w-2 rounded-full bg-chart-1' /> Revenue inputs
                 </span>
                 <span className='flex items-center gap-1.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase'>
-                  <span className='h-2 w-2 rounded-full bg-[oklch(0.65_0.18_150)]' /> Tax estimates
+                  <span className='h-2 w-2 rounded-full bg-chart-2' /> Tax estimates
                 </span>
                 <Select
                   value={String(taxPeriodDays)}

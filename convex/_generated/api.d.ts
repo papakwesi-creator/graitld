@@ -14,6 +14,7 @@ import type * as auth from "../auth.js";
 import type * as channelData from "../channelData.js";
 import type * as http from "../http.js";
 import type * as influencers from "../influencers.js";
+import type * as tax from "../tax.js";
 
 import type {
   ApiFromModules,
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   channelData: typeof channelData;
   http: typeof http;
   influencers: typeof influencers;
+  tax: typeof tax;
 }>;
 
 /**

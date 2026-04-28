@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
 
@@ -19,17 +19,15 @@ import { authClient } from '@/lib/auth-client';
  * @returns The React element for the sign-in / sign-up page containing branding and the authentication form.
  */
 export default function SignInPage() {
-  const searchParams = useSearchParams();
+  const router = useRouter();
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const returnTo = searchParams.get('returnTo') || '/';
-  const connectChannelId = searchParams.get('connectChannelId');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -55,17 +53,11 @@ export default function SignInPage() {
           return;
         }
       }
-      if (connectChannelId) {
-        window.location.assign(
-          `/api/youtube/connect?channelId=${encodeURIComponent(connectChannelId)}&returnTo=${encodeURIComponent(returnTo)}`,
-        );
-        return;
-      }
-
-      window.location.assign(returnTo);
+      router.push('/');
     } catch {
       setError('An unexpected error occurred');
     } finally {
+     
       setLoading(false);
     }
   };
@@ -73,22 +65,10 @@ export default function SignInPage() {
   return (
     <div className='flex min-h-screen'>
       {/* Left panel — GRA branding */}
-      <div className='relative hidden w-1/2 flex-col justify-between overflow-hidden bg-primary p-12 lg:flex'>
-        {/* Decorative geometric pattern */}
-        <div className='absolute inset-0 opacity-[0.04]'>
-          <svg width='100%' height='100%' xmlns='http://www.w3.org/2000/svg'>
-            <defs>
-              <pattern id='kente' x='0' y='0' width='60' height='60' patternUnits='userSpaceOnUse'>
-                <rect width='60' height='60' fill='none' />
-                <rect x='0' y='0' width='15' height='30' fill='currentColor' />
-                <rect x='30' y='0' width='15' height='30' fill='currentColor' />
-                <rect x='15' y='30' width='15' height='30' fill='currentColor' />
-                <rect x='45' y='30' width='15' height='30' fill='currentColor' />
-              </pattern>
-            </defs>
-            <rect width='100%' height='100%' fill='url(#kente)' className='text-white' />
-          </svg>
-        </div>
+      <div className='relative hidden w-1/2 flex-col justify-between overflow-hidden bg-[#143369] p-12 lg:flex'>
+        {/* GRA Building Background */}
+        <div className="absolute inset-0 bg-[url('/gra-building.jpg')] bg-cover bg-center opacity-40 mix-blend-luminosity grayscale"></div>
+        <div className="absolute inset-0 bg-[#143369]/70 mix-blend-multiply"></div>
 
         {/* Kente accent stripe */}
         <div className='absolute top-0 left-0 h-full w-1.5'>
@@ -112,7 +92,7 @@ export default function SignInPage() {
             />
             <div>
               <h2 className='font-heading text-xl font-bold text-white'>Ghana Revenue Authority</h2>
-              <p className='text-sm text-white/50'>YouTube creator tax dashboard</p>
+              <p className='text-sm text-white/50'>Influencer Tax Liability Dashboard</p>
             </div>
           </div>
         </div>
@@ -125,18 +105,18 @@ export default function SignInPage() {
           </blockquote>
           <div className='flex gap-8 text-white/40'>
             <div>
-              <p className='font-heading text-3xl font-bold text-[#D4A843]'>2</p>
-              <p className='mt-1 text-xs tracking-wider uppercase'>Product Tracks</p>
+              <p className='font-heading text-3xl font-bold text-[#D4A843]'>GH&#8373;</p>
+              <p className='mt-1 text-xs tracking-wider uppercase'>Revenue Tracking</p>
             </div>
             <div className='h-12 w-px bg-white/10' />
             <div>
-              <p className='font-heading text-3xl font-bold text-[#006B3F]'>24/7</p>
-              <p className='mt-1 text-xs tracking-wider uppercase'>Compliance Monitoring</p>
+              <p className='font-heading text-3xl font-bold text-[#006B3F]'>2</p>
+              <p className='mt-1 text-xs tracking-wider uppercase'>Platforms Monitored</p>
             </div>
             <div className='h-12 w-px bg-white/10' />
             <div>
-              <p className='font-heading text-3xl font-bold text-white/70'>1</p>
-              <p className='mt-1 text-xs tracking-wider uppercase'>YouTube Focus</p>
+              <p className='font-heading text-3xl font-bold text-white/70'>16</p>
+              <p className='mt-1 text-xs tracking-wider uppercase'>Regions Covered</p>
             </div>
           </div>
         </div>
@@ -152,7 +132,7 @@ export default function SignInPage() {
           {/* Mobile logo */}
           <div className='flex flex-col items-start gap-3 lg:hidden'>
             <Image alt='GRA logo' src='/logo.png' width={80} height={60} className='rounded-lg' />
-            <span className='font-heading text-sm font-semibold'>GRA YouTube Tax Dashboard</span>
+            <span className='font-heading text-sm font-semibold'>GRA Tax Dashboard</span>
           </div>
 
           <div>
@@ -161,7 +141,7 @@ export default function SignInPage() {
             </h1>
             <p className='mt-2 text-sm text-muted-foreground'>
               {mode === 'signIn'
-                ? 'Enter your credentials to manage public imports, connected analytics, and tax estimates.'
+                ? 'Enter your credentials to access the dashboard.'
                 : 'Set up your officer account to get started.'}
             </p>
           </div>

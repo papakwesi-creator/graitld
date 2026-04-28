@@ -73,12 +73,12 @@
   --popover-foreground: oklch(0.14 0.05 260);
 
   /* Primary — Corporate Navy */
-  --primary: oklch(0.2 0.06 265); /* rich navy */
-  --primary-foreground: oklch(0.98 0 0);
+  --primary: #143369; /* GRA Blue */
+  --primary-foreground: #ffffff;
 
   /* Secondary — Cool Gray */
   --secondary: oklch(0.96 0.01 240);
-  --secondary-foreground: oklch(0.2 0.06 265);
+  --secondary-foreground: #143369; /* GRA Blue */
 
   /* Muted */
   --muted: oklch(0.96 0.01 240);
@@ -86,47 +86,47 @@
 
   /* Accent — Electric Signal Blue */
   --accent: oklch(0.94 0.02 240);
-  --accent-foreground: oklch(0.2 0.06 265);
+  --accent-foreground: #143369; /* GRA Blue */
 
   /* Destructive */
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
 
   /* Success — Fintech Green */
-  --success: oklch(0.65 0.18 150);
-  --success-foreground: oklch(0.98 0 0);
+  --success: #00a859; /* GRA Green */
+  --success-foreground: #ffffff;
 
   /* Warning — Signal Amber */
-  --warning: oklch(0.82 0.12 85);
-  --warning-foreground: oklch(0.2 0.04 85);
+  --warning: #ffdd02; /* GRA Gold */
+  --warning-foreground: #143369; /* GRA Blue */
 
   /* Gold — Metallic */
-  --gold: oklch(0.7 0.16 80);
-  --gold-foreground: oklch(1 0 0);
+  --gold: #ffdd02; /* GRA Gold */
+  --gold-foreground: #143369;
 
   /* Borders & Input */
   --border: oklch(0.9 0.02 240);
   --input: oklch(0.9 0.02 240);
-  --ring: oklch(0.2 0.06 265); /* navy ring */
+  --ring: #143369; /* GRA Blue ring */
 
   /* Charts */
-  --chart-1: oklch(0.2 0.06 265); /* navy */
-  --chart-2: oklch(0.6 0.18 150); /* green */
-  --chart-3: oklch(0.7 0.16 80); /* gold */
-  --chart-4: oklch(0.6 0.22 25); /* red */
-  --chart-5: oklch(0.55 0.2 240); /* blue */
+  --chart-1: #143369; /* GRA Blue */
+  --chart-2: #00a859; /* GRA Green */
+  --chart-3: #ffdd02; /* GRA Gold */
+  --chart-4: #ef4444; /* red */
+  --chart-5: #d0ba8e; /* Sorrell Brown */
 
   --radius: 0.5rem;
 
-  /* Sidebar — Light Architectural */
-  --sidebar: oklch(0.985 0.002 240);
-  --sidebar-foreground: oklch(0.3 0.04 260);
-  --sidebar-primary: oklch(0.2 0.06 265);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.95 0.01 240);
-  --sidebar-accent-foreground: oklch(0.14 0.05 260);
-  --sidebar-border: oklch(0.9 0.02 240);
-  --sidebar-ring: oklch(0.2 0.06 265);
+  /* Sidebar — GRA Theme */
+  --sidebar: #143369; /* GRA Blue */
+  --sidebar-foreground: #ffffff; /* White text */
+  --sidebar-primary: #ffdd02; /* GRA Gold for active item */
+  --sidebar-primary-foreground: #143369; /* Dark text on gold */
+  --sidebar-accent: #1e4587; /* Slightly lighter navy for hover */
+  --sidebar-accent-foreground: #ffdd02; /* Gold text on hover */
+  --sidebar-border: #143369; /* Seamless border */
+  --sidebar-ring: #ffdd02;
 }
 
 /* ============================================
@@ -148,8 +148,8 @@
   --popover-foreground: oklch(0.96 0.01 240);
 
   /* Primary — Electric Blue/White Hybrid */
-  --primary: oklch(0.96 0.01 240);
-  --primary-foreground: oklch(0.12 0.04 265);
+  --primary: #ffdd02; /* GRA Gold */
+  --primary-foreground: #143369; /* GRA Blue text */
 
   /* Secondary */
   --secondary: oklch(0.22 0.04 265);
@@ -161,45 +161,45 @@
 
   /* Accent — Glowing Blue */
   --accent: oklch(0.22 0.06 260);
-  --accent-foreground: oklch(0.96 0.01 240);
+  --accent-foreground: #ffdd02; /* GRA Gold */
 
   /* Destructive */
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
 
   /* Success */
-  --success: oklch(0.65 0.18 150);
+  --success: #00a859; /* GRA Green */
   --success-foreground: oklch(0.12 0.04 265);
 
   /* Warning */
-  --warning: oklch(0.82 0.12 85);
+  --warning: #ffdd02; /* GRA Gold */
   --warning-foreground: oklch(0.12 0.04 265);
 
   /* Gold */
-  --gold: oklch(0.75 0.14 85);
-  --gold-foreground: oklch(0.12 0.04 265);
+  --gold: #ffdd02; /* GRA Gold */
+  --gold-foreground: #143369; /* GRA Blue */
 
   /* Borders & Input */
   --border: oklch(0.22 0.04 265);
   --input: oklch(0.22 0.04 265);
-  --ring: oklch(0.6 0.18 250); /* electric blue ring */
+  --ring: #ffdd02; /* GRA Gold ring */
 
   /* Charts */
-  --chart-1: oklch(0.6 0.18 250); /* electric blue */
-  --chart-2: oklch(0.65 0.18 150); /* neon green */
-  --chart-3: oklch(0.75 0.14 85); /* gold */
-  --chart-4: oklch(0.6 0.22 25); /* red */
-  --chart-5: oklch(0.7 0.12 300); /* purple */
+  --chart-1: #ffdd02; /* GRA Gold */
+  --chart-2: #00a859; /* GRA Green */
+  --chart-3: #143369; /* GRA Blue */
+  --chart-4: #ef4444; /* red */
+  --chart-5: #d0ba8e; /* Sorrell Brown */
 
   /* Sidebar */
-  --sidebar: oklch(0.1 0.03 265); /* darker than bg */
-  --sidebar-foreground: oklch(0.82 0.02 250);
-  --sidebar-primary: oklch(0.75 0.14 85); /* gold active */
-  --sidebar-primary-foreground: oklch(0.12 0.04 265);
-  --sidebar-accent: oklch(0.18 0.04 265);
-  --sidebar-accent-foreground: oklch(0.96 0.01 240);
-  --sidebar-border: oklch(0.18 0.04 265);
-  --sidebar-ring: oklch(0.6 0.18 250);
+  --sidebar: #143369; /* GRA Blue */
+  --sidebar-foreground: #ffffff; /* White text */
+  --sidebar-primary: #ffdd02; /* GRA Gold active */
+  --sidebar-primary-foreground: #143369; /* GRA Blue */
+  --sidebar-accent: #1e4587; /* Lighter navy for hover */
+  --sidebar-accent-foreground: #ffdd02; /* GRA Gold */
+  --sidebar-border: #143369; /* Seamless border */
+  --sidebar-ring: #ffdd02; /* GRA Gold */
 }
 
 @layer base {
@@ -207,7 +207,32 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans tracking-tight;
+    @apply text-foreground font-sans tracking-tight;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-color: var(--background);
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: url('/gra-building.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    opacity: 0.06;
+    filter: grayscale(100%);
+    pointer-events: none;
+  }
+  .dark body::after {
+    opacity: 0.03;
+    filter: grayscale(100%) brightness(150%);
   }
   h1,
   h2,
